@@ -118,6 +118,10 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
     </Link>
+    <PreBuildEvent>
+      <Command>python $(ProjectDir)YACC\compile.py $(ProjectDir)YACC</Command>
+      <Message>Compile and move Lex and Yacc</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -135,6 +139,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="KurMain.cpp" />
+    <ClCompile Include="lexic.cpp" />
+    <ClCompile Include="parse.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="KurCommon.h" />
+    <ClInclude Include="parse.cpp.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="lexic.l" />
+    <None Include="YACC\parse.y" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="code.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
