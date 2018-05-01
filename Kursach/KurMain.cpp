@@ -4,6 +4,7 @@
 #define NO_ERROR	0
 
 extern int yyparse();
+extern YYSTATPOS g_yypos;
 
 int main(int argc, const char *argv[])
 {
@@ -34,6 +35,8 @@ int main(int argc, const char *argv[])
 	}
 
 	fclose(yyin);
+
+	std::cout << "End position: Line " << g_yypos.getLine() << ", Column " << g_yypos.getCol() << std::endl;
 
 	getchar();
 

@@ -28,20 +28,24 @@ letter [a-zA-Z]
 	//yytext : a character array that contains the actual string that matched a pattern.
 	//yyleng : the no. of characters matched.
 	
-	//YYSTAT g_yystat;
+	YYSTATPOS g_yypos;
 	
 	// update global position
-	#define UPD 	//g_yystat.yyglobalpos += yyleng; g_yystat.yylinepos += yyleng
+	#define UP 		g_yypos.incLinePos(yyleng);
 	
 	// update position after new line
-	#define UPDNL 	//g_yystat.yyline++; g_yystat.yylinepos = 0; g_yystat.yystartpos = g_yystat.yyglobalpos
+	#define UPNL 	g_yypos.getLine();
 	
 %}
 
 %%
 
+digit /* integer number */ {
+	UP	return INT_NUM;
+}
+
 {mantissa}([eE][+-]?{digit}+)? /* Float number */ {
-UPD;
+UP
 
 return LITERAL_NUMBER;
 }
@@ -49,178 +53,177 @@ return LITERAL_NUMBER;
 
 
 
-"'"	 /* Const string */	{ UPD; BEGIN(const_string1); }
-"\"" /* Const string */	{ UPD; BEGIN(const_string2); }
+"'"	 /* Const string */	{ UP BEGIN(const_string1); }
+"\"" /* Const string */	{ UP BEGIN(const_string2); }
 
 <const_string1>
 {
-	"'"			{ UPD; BEGIN(0); return CSTRING; 							}
-	"\\'"		{ UPD; /* escape character*/								}
-	\n			{ UPDNL; yyerror("Next line but no end ' symbol found\n"); 	}
+	"'"			{ UP BEGIN(0); return CSTRING; 							}
+	"\\'"		{ UP /* escape character*/								}
+	\n			{ UPNL; yyerror("Next line but no end ' symbol found\n"); 	}
 	<<EOF>>		{ yyerror("EOF but no end ' symbol found\n"); 				}
-	.			{ UPD; /*ignore*/ 											}
+	.			{ UP /*ignore*/ 											}
 }
 
 <const_string2>
 {
-	"\""		{ UPD; BEGIN(0); return CSTRING;							}
-	"\\\""		{ UPD; /* escape character*/								}
-	\n			{ UPDNL; yyerror("Next line but no end \" symbol found\n");	}
+	"\""		{ UP BEGIN(0); return CSTRING;							}
+	"\\\""		{ UP /* escape character*/								}
+	\n			{ UPNL; yyerror("Next line but no end \" symbol found\n");	}
 	<<EOF>>		{ yyerror("EOF but no end \" symbol found\n");				}
-	.			{ UPD; /*ignore*/ 											}
+	.			{ UP /*ignore*/ 											}
 }
 
 
 
 "//".*\n? /* Comments: single line comment */ {
-UPDNL;  
+UPNL;  
 /* ignore */
 }	
 
-"/*" /* Comments: multiple line comment */ { UPD; BEGIN(long_comment); }
+"/*" /* Comments: multiple line comment */ { UP BEGIN(long_comment); }
 
 <long_comment>
 {
-	"*/"		{ UPD; BEGIN(0); 								}
-	\n			{ UPDNL; 										}
+	"*/"		{ UP BEGIN(0); 								}
+	\n			{ UPNL; 										}
 	<<EOF>>		{ yyerror("EOF but no end */ symbol found\n");	}
-	.			{ UPD; /*ignore*/ 								}
+	.			{ UP /*ignore*/ 								}
 }
 
 
 
 
-"abstract"	    /* JZ reserved word */ 	{ UPD; return ABSTRACT; 	}
-"boolean"       /* JZ reserved word */	{ UPD; return BOOLEAN; 		}
-"break"         /* JZ reserved word */  { UPD; return BREAK; 		}
-"byte"          /* JZ reserved word */  { UPD; return BYTE; 		}
-"case"          /* JZ reserved word */  { UPD; return CASE; 		}
-"catch"         /* JZ reserved word */  { UPD; return CATCH; 		}
-"char"          /* JZ reserved word */  { UPD; return CHAR; 		}
-"class"         /* JZ reserved word */  { UPD; return CLASS; 		}
-"const"         /* JZ reserved word */  { UPD; return CONST; 		}
-"continue"      /* JZ reserved word */  { UPD; return CONTINUE; 	}
-"debugger"      /* JZ reserved word */  { UPD; return DEBUGGER; 	}
-"default"       /* JZ reserved word */  { UPD; return DEFAULT; 		}
-"delete"        /* JZ reserved word */  { UPD; return DELETE; 		}
-"do"            /* JZ reserved word */  { UPD; return DO; 			}
-"double"        /* JZ reserved word */  { UPD; return DOUBLE; 		}
-"else"          /* JZ reserved word */  { UPD; return ELSE; 		}	
-"enum"          /* JZ reserved word */  { UPD; return ENUM; 		}
-"export"        /* JZ reserved word */  { UPD; return EXPORT; 		}
-"extends"       /* JZ reserved word */  { UPD; return EXTENDS; 		}
-"false"         /* JZ reserved word */  { UPD; return FALSE; 		}
-"final"         /* JZ reserved word */  { UPD; return FINAL; 		}
-"finally"       /* JZ reserved word */  { UPD; return FINALLY; 		}
-"float"         /* JZ reserved word */  { UPD; return FLOAT; 		}
-"for"           /* JZ reserved word */  { UPD; return FOR; 			}
-"function"      /* JZ reserved word */  { UPD; return FUNCTION; 	}
-"goto"          /* JZ reserved word */  { UPD; return GOTO; 		}
-"if"            /* JZ reserved word */  { UPD; return IF; 			}
-"implements"    /* JZ reserved word */  { UPD; return IMPLEMENTS; 	}
-"import"        /* JZ reserved word */  { UPD; return IMPORT; 		}
-"in"            /* JZ reserved word */  { UPD; return IN; 			}
-"instanceof"    /* JZ reserved word */  { UPD; return INSTANCEOF; 	}
-"int"           /* JZ reserved word */  { UPD; return INT; 			}
-"interface"     /* JZ reserved word */  { UPD; return INTERFACE; 	}
-"long"          /* JZ reserved word */  { UPD; return LONG; 		}
-"native"        /* JZ reserved word */  { UPD; return NATIVE; 		}
-"new"           /* JZ reserved word */  { UPD; return NEW; 			}
-"null"          /* JZ reserved word */  { UPD; return NUL; 			}	
-"package"       /* JZ reserved word */  { UPD; return PACKAGE; 		}
-"private"       /* JZ reserved word */  { UPD; return PRIVATE; 		}
-"protected"     /* JZ reserved word */  { UPD; return PROTECTED; 	}
-"public"        /* JZ reserved word */  { UPD; return PUBLIC; 		}
-"return"        /* JZ reserved word */  { UPD; return RETURN; 		}
-"short"         /* JZ reserved word */  { UPD; return SHORT; 		}	
-"static"        /* JZ reserved word */  { UPD; return STATIC; 		}
-"super"         /* JZ reserved word */  { UPD; return SUPER; 		}
-"switch"		/* JZ reserved word */  { UPD; return SWITCH; 		}
-"synchronized"	/* JZ reserved word */  { UPD; return SYNCHRONIZED; }
-"this"			/* JZ reserved word */  { UPD; return THIS; 		}
-"throw"         /* JZ reserved word */  { UPD; return THROW; 		}
-"throws"        /* JZ reserved word */  { UPD; return THROWS; 		}
-"transient"     /* JZ reserved word */  { UPD; return TRANSIENT;	}
-"true"          /* JZ reserved word */  { UPD; return TRUE; 		}
-"try"           /* JZ reserved word */  { UPD; return TRY; 			}
-"typeof"        /* JZ reserved word */  { UPD; return TYPEOF; 		}
-"var"           /* JZ reserved word */  { UPD; return VAR; 			}
-"void"          /* JZ reserved word */  { UPD; return VOID; 		}
-"volatile"      /* JZ reserved word */  { UPD; return VOLATILE; 	}
-"while"         /* JZ reserved word */  { UPD; return WHILE; 		}
-"with"          /* JZ reserved word */  { UPD; return WITH; 		}
+"abstract"	    /* JZ reserved word */ 	{ UP return ABSTRACT; 	}
+"boolean"       /* JZ reserved word */	{ UP return BOOLEAN; 		}
+"break"         /* JZ reserved word */  { UP return BREAK; 		}
+"byte"          /* JZ reserved word */  { UP return BYTE; 		}
+"case"          /* JZ reserved word */  { UP return CASE; 		}
+"catch"         /* JZ reserved word */  { UP return CATCH; 		}
+"char"          /* JZ reserved word */  { UP return CHAR; 		}
+"class"         /* JZ reserved word */  { UP return CLASS; 		}
+"const"         /* JZ reserved word */  { UP return CONST; 		}
+"continue"      /* JZ reserved word */  { UP return CONTINUE; 	}
+"debugger"      /* JZ reserved word */  { UP return DEBUGGER; 	}
+"default"       /* JZ reserved word */  { UP return DEFAULT; 		}
+"delete"        /* JZ reserved word */  { UP return DELETE; 		}
+"do"            /* JZ reserved word */  { UP return DO; 			}
+"double"        /* JZ reserved word */  { UP return DOUBLE; 		}
+"else"          /* JZ reserved word */  { UP return ELSE; 		}	
+"enum"          /* JZ reserved word */  { UP return ENUM; 		}
+"export"        /* JZ reserved word */  { UP return EXPORT; 		}
+"extends"       /* JZ reserved word */  { UP return EXTENDS; 		}
+"false"         /* JZ reserved word */  { UP return FALSE; 		}
+"final"         /* JZ reserved word */  { UP return FINAL; 		}
+"finally"       /* JZ reserved word */  { UP return FINALLY; 		}
+"float"         /* JZ reserved word */  { UP return FLOAT; 		}
+"for"           /* JZ reserved word */  { UP return FOR; 			}
+"function"      /* JZ reserved word */  { UP return FUNCTION; 	}
+"goto"          /* JZ reserved word */  { UP return GOTO; 		}
+"if"            /* JZ reserved word */  { UP return IF; 			}
+"implements"    /* JZ reserved word */  { UP return IMPLEMENTS; 	}
+"import"        /* JZ reserved word */  { UP return IMPORT; 		}
+"in"            /* JZ reserved word */  { UP return IN; 			}
+"instanceof"    /* JZ reserved word */  { UP return INSTANCEOF; 	}
+"int"           /* JZ reserved word */  { UP return INT; 			}
+"interface"     /* JZ reserved word */  { UP return INTERFACE; 	}
+"long"          /* JZ reserved word */  { UP return LONG; 		}
+"native"        /* JZ reserved word */  { UP return NATIVE; 		}
+"new"           /* JZ reserved word */  { UP return NEW; 			}
+"null"          /* JZ reserved word */  { UP return NUL; 			}	
+"package"       /* JZ reserved word */  { UP return PACKAGE; 		}
+"private"       /* JZ reserved word */  { UP return PRIVATE; 		}
+"protected"     /* JZ reserved word */  { UP return PROTECTED; 	}
+"public"        /* JZ reserved word */  { UP return PUBLIC; 		}
+"return"        /* JZ reserved word */  { UP return RETURN; 		}
+"short"         /* JZ reserved word */  { UP return SHORT; 		}	
+"static"        /* JZ reserved word */  { UP return STATIC; 		}
+"super"         /* JZ reserved word */  { UP return SUPER; 		}
+"switch"		/* JZ reserved word */  { UP return SWITCH; 		}
+"synchronized"	/* JZ reserved word */  { UP return SYNCHRONIZED; }
+"this"			/* JZ reserved word */  { UP return THIS; 		}
+"throw"         /* JZ reserved word */  { UP return THROW; 		}
+"throws"        /* JZ reserved word */  { UP return THROWS; 		}
+"transient"     /* JZ reserved word */  { UP return TRANSIENT;	}
+"true"          /* JZ reserved word */  { UP return TRUE; 		}
+"try"           /* JZ reserved word */  { UP return TRY; 			}
+"typeof"        /* JZ reserved word */  { UP return TYPEOF; 		}
+"var"           /* JZ reserved word */  { UP return VAR; 			}
+"void"          /* JZ reserved word */  { UP return VOID; 		}
+"volatile"      /* JZ reserved word */  { UP return VOLATILE; 	}
+"while"         /* JZ reserved word */  { UP return WHILE; 		}
+"with"          /* JZ reserved word */  { UP return WITH; 		}
 
 
 
 
-[_$a-zA-Z]+[_$_$a-zA-Z0-9]* /* Variable/function name */ {
-UPD;
-	
-	return LITERAL_STRING;
+[_$a-zA-Z]+[_$a-zA-Z0-9]* /* Variable/function name */ {
+UP	return OBJ_NAME;
 }
 
 
 
-"==" | "===" { UPD; return OPL_EQ; 	}
-"!=" | "!==" { UPD; return OPL_NEQ; }
-"!"  { UPD; return OPL_NOT; }
-"&&" { UPD; return OPL_AND; }
-"||" { UPD; return OPL_OR; 	}
-"<"  { UPD; return OPL_L; 	}
-">"  { UPD; return OPL_G; 	}
-"<=" { UPD; return OPL_LE; 	}
-">=" { UPD; return OPL_GE; 	}
+"==" | "===" { UP return OPL_EQ; 	}
+"!=" | "!==" { UP return OPL_NEQ; }
+"!"  { UP return OPL_NOT; }
+"&&" { UP return OPL_AND; }
+"||" { UP return OPL_OR; 	}
+"<"  { UP return OPL_L; 	}
+">"  { UP return OPL_G; 	}
+"<=" { UP return OPL_LE; 	}
+">=" { UP return OPL_GE; 	}
 
-">>=" | ">>>="  { UPD; return OP_ASSIGN_LSHIFT; }
-"<<=" | "<<<="  { UPD; return OP_ASSIGN_RSHIFT; }
-"+="  { UPD; return OP_ASSIGN_ADD; }
-"-="  { UPD; return OP_ASSIGN_SUB; }
-"**=" { UPD; return OP_ASSIGN_POW; }
-"*="  { UPD; return OP_ASSIGN_MUL; }
-"/="  { UPD; return OP_ASSIGN_DIV; }
-"%="  { UPD; return OP_ASSIGN_MOD; }
-"&="  { UPD; return OP_ASSIGN_AND; }
-"|="  { UPD; return OP_ASSIGN_OR; }
-"^="  { UPD; return OP_ASSIGN_XOR; }
-"="   { UPD; return OP_ASSIGN; }
+">>=" | ">>>="  { UP return OP_ASSIGN_LSHIFT; }
+"<<=" | "<<<="  { UP return OP_ASSIGN_RSHIFT; }
+"+="  { UP return OP_ASSIGN_ADD; }
+"-="  { UP return OP_ASSIGN_SUB; }
+"**=" { UP return OP_ASSIGN_POW; }
+"*="  { UP return OP_ASSIGN_MUL; }
+"/="  { UP return OP_ASSIGN_DIV; }
+"%="  { UP return OP_ASSIGN_MOD; }
+"&="  { UP return OP_ASSIGN_AND; }
+"|="  { UP return OP_ASSIGN_OR; }
+"^="  { UP return OP_ASSIGN_XOR; }
+"="   { UP return OP_ASSIGN; }
 
-"~"  { UPD; return OPB_NOT; }
-"|"  { UPD; return OPB_OR;  }
-"&"  { UPD; return OPB_AND; }
-"^"  { UPD; return OPB_XOR; }
-"<<"|"<<<"  { UPD; return OPB_LSHIFT; }
-">>"|">>>"  { UPD; return OPB_RSHIFT; }
+"~"  { UP return OPB_NOT; }
+"|"  { UP return OPB_OR;  }
+"&"  { UP return OPB_AND; }
+"^"  { UP return OPB_XOR; }
+"<<"|"<<<"  { UP return OPB_LSHIFT; }
+">>"|">>>"  { UP return OPB_RSHIFT; }
 
-"++" { UPD; return OPA_INC; }
-"--" { UPD; return OPA_DEC; }
-"*"  { UPD; return OPA_MUL; }
-"/"  { UPD; return OPA_DIV; }
-"%"  { UPD; return OPA_MOD; }
-"+"  { UPD; return OPA_ADD; }
-"-"  { UPD; return OPA_SUB; }
+"++" { UP return OPA_INC; }
+"--" { UP return OPA_DEC; }
+"*"  { UP return OPA_MUL; }
+"/"  { UP return OPA_DIV; }
+"%"  { UP return OPA_MOD; }
+"+"  { UP return OPA_ADD; }
+"-"  { UP return OPA_SUB; }
 
-"." { UPD; return DOT; }
-"," { UPD; return COMA; }
-":" { UPD; return COLON; }
-"?" { UPD; return QMARK; }
-"(" { UPD; return LBRACKET_ROUND; }
-")" { UPD; return RBRACKET_ROUND; }
-"[" { UPD; return LBRACKET_SQUARE;}
-"]" { UPD; return RBRACKET_SQUARE;}
-"{" { UPD; return LBRACKET_CURLY; }
-"}" { UPD; return RBRACKET_CURLY; }
+"." { UP return DOT; }
+"," { UP return COMA; }
+":" { UP return COLON; }
+"?" { UP return QMARK; }
+"(" { UP return LBRACKET_ROUND; }
+")" { UP return RBRACKET_ROUND; }
+"[" { UP return LBRACKET_SQUARE;}
+"]" { UP return RBRACKET_SQUARE;}
+"{" { UP return LBRACKET_CURLY; }
+"}" { UP return RBRACKET_CURLY; }
 
 
 [\t ] /* Spaces: tab and space */ {
-UPD;	
+UP	
 }
 
 ";" /* Spaces: operation splitter */ {
 	//g_yystat.yystartpos = g_yystat.yyglobalpos;
+	return END_OP;
 }
 
 "\n" /* Spaces: newline */ {
-UPDNL;
+UPNL;
 }
 
 . 	/* Lex error */  {
@@ -249,6 +252,8 @@ void yyerror(const char* format, ...)
 	if (!strcmp(format, "parse error"))
 		printf("\n");
 	
+	std::cout << "Error position: Line " << g_yypos.getLine() << ", Column " << g_yypos.getCol() << std::endl;
+
 	//printf("Position: [line %u: %u]\n", g_yystat.yyline, g_yystat.yylinepos);
 	//printf("Text: '%s'\n", yytext);
 	
