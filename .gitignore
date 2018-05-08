@@ -260,3 +260,4 @@ paket-files/
 __pycache__/
 *.pyc
 /TestProj
+/Kursach/YACC/parse.cpp.output

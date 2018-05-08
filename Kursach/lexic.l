@@ -34,7 +34,7 @@ letter [a-zA-Z]
 	#define UP 		g_yypos.incLinePos(yyleng);
 	
 	// update position after new line
-	#define UPNL 	g_yypos.getLine();
+	#define UPNL 	g_yypos.nextLine();
 	
 %}
 
@@ -218,12 +218,12 @@ UP
 }
 
 ";" /* Spaces: operation splitter */ {
-	//g_yystat.yystartpos = g_yystat.yyglobalpos;
+	UP
 	return END_OP;
 }
 
 "\n" /* Spaces: newline */ {
-UPNL;
+	UPNL;
 }
 
 . 	/* Lex error */  {

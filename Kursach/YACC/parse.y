@@ -1,65 +1,12 @@
 %token 
 
 /* ----- JS reserved words ----- */
-ABSTRACT
-BOOLEAN
-BREAK
-BYTE
-CASE
-CATCH
-CHAR
-CLASS
-CONST
-CONTINUE
-DEBUGGER
-DEFAULT
-DELETE
-DO
-DOUBLE	
-ELSE
-ENUM
-EXPORT
-EXTENDS
-FALSE
-FINAL
-FINALLY
-FLOAT
-FOR
-FUNCTION
-GOTO
-IF
-IMPLEMENTS
-IMPORT
-IN	
-INSTANCEOF
-INT
-INTERFACE
-LONG
-NATIVE
-NEW
-NUL
-PACKAGE
-PRIVATE
-PROTECTED
-PUBLIC
-RETURN
-SHORT
-STATIC
-SUPER
-SWITCH
-SYNCHRONIZED
-THIS
-THROW
-THROWS
-TRANSIENT
-TRUE
-TRY
-TYPEOF
-VAR
-VOID
-VOLATILE
-WHILE
-WITH
+ABSTRACT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEBUGGER DEFAULT
+DELETE DO DOUBLE ELSE ENUM EXPORT EXTENDS FALSE FINAL FINALLY FLOAT FOR FUNCTION
+GOTO IF IMPLEMENTS IMPORT IN INSTANCEOF INT INTERFACE LONG NATIVE NEW NUL
+PACKAGE PRIVATE PROTECTED PUBLIC RETURN SHORT STATIC SUPER SWITCH SYNCHRONIZED
+THIS THROW THROWS TRANSIENT TRUE TRY TYPEOF VAR VOID VOLATILE WHILE WITH
+UNDEFINED NAN INFINITY
 /* ----- JS reserved words ----- */
 
 DOT 	// access operator '.'
@@ -173,87 +120,119 @@ OPA_DEC // '--'
 block:
 			expression END_OP									{dbg("block: a + 0;")}
 			| block expression END_OP							{dbg("block: ... a + 0;")}
-			| empty_expression 									{dbg("block: ; (empty_expression)")}
-			| block empty_expression							{dbg("block: ... ; (empty_expression)")}
+			| empty_expression END_OP 							{dbg("block: ; empty_expression;")}
+			| block empty_expression END_OP						{dbg("block: ... ; empty_expression;")}
 
-			| VAR var_init 										{dbg("block: var a... (local variable)")}
-			| block VAR var_init 								{dbg("block: ... var a... (local variable)")}
-			| var_init 											{dbg("block: a... (global variable)")}
-			| block var_init 									{dbg("block: ... a... (global variable)")}
+			| var_init END_OP									{dbg("block: variable initialization;")}
+			| block var_init END_OP								{dbg("block: ... ; variable initialization;")}
+
+			| obj_and_method END_OP								{dbg("block: document.writeln('Hello World');")}
+			| block obj_and_method END_OP						{dbg("block: ... document.writeln('Hello World');")}
+
+/* >>>>>>>>>>>------ Objects ------<<<<<<<<<<< */
+
+obj_and_method:
+			object LBRACKET_ROUND parameters RBRACKET_ROUND {dbg("obj_and_method: f(expr)")}
+
+parameters:
+			expression 											{dbg("parameters: 1")}
+			| parameters DOT expression 						{dbg("parameters: ... , 1")}
+
+object:
+			literal_string	 									{dbg("object: a")}
+			| object DOT literal_string							{dbg("object: ... .a")}
+
+/* <<<<<<<<<<<------ Objects ------>>>>>>>>>>> */
+
+/* >>>>>>>>>>>------ Variable initialization ------<<<<<<<<<<< */
 
 var_init:
-			operation_assign COMA var_init						{dbg("var_init: a = 0, ...")}
-			| literal_string COMA var_init						{dbg("var_init: a, ...")}
-			| operation_assign END_OP							{dbg("var_init: a = 0;")}
-			| literal_string END_OP								{dbg("var_init: a;")}
+			VAR var												{dbg("var_init: var a...; (local variable)")}
+			| var												{dbg("var_init: a...; (global variable)")}
+			
+var:
+			literal_string 										{dbg("var: a")}
+			| var COMA literal_string							{dbg("var: ...a")}
+			| operation_assign 									{dbg("var_init: a = 0;")}
+			| var COMA operation_assign 						{dbg("var_init: a = 0, ...")}
 
 operation_assign:
 			literal_string OP_ASSIGN expression					{dbg("operation_assign: a = 0;")}
 			| literal_string OP_ASSIGN operation_assign			{dbg("operation_assign: a = ...")}
 
+/* <<<<<<<<<<<------ Variable initialization ------>>>>>>>>>>> */
+
 /* >>>>>>>>>>>------ Expressions ------<<<<<<<<<<< */
+
+empty_expression:
+			{dbg("empty_expression: ;")}
 
 expression: 
 			// expr in brackets
 			//| LBRACKET_ROUND expression RBRACKET_ROUND DOT refinements_and_calls 	{dbg("(expr).f(). ...")	}
 			
 			////------ expression operands end
-					
-			LBRACKET_ROUND expression RBRACKET_ROUND			{dbg("expression: (a+0)")			}
 
-			| unary_expression				
+			LBRACKET_ROUND expression RBRACKET_ROUND			{dbg("expression: (a+0)")}
+
 			| binary_expression
 			| ternary_expression
-
+			| unary_expression				
 
 			| literal_number
 			| constant_string
-			| literal_string
 
-empty_expression:
-			{dbg("empty_expression: ;")}
+literal_expression:
+			literal_string
+			| expression
 
 unary_expression:
 			/* prefix expression */
-			OPA_INC	expression 		{dbg("unary_expression: ++ a")}
-			| OPA_DEC expression  	{dbg("unary_expression: -- a")}
+			OPA_INC literal_string				{dbg("unary_expression: ++ a")}
+			| OPA_INC LBRACKET_ROUND literal_string RBRACKET_ROUND
+			| OPA_DEC literal_string	 		{dbg("unary_expression: -- a")}
+			| OPA_DEC LBRACKET_ROUND literal_string RBRACKET_ROUND
 
 			/* postfix expression */
-			| expression OPA_INC 	{dbg("unary_expression: a ++")}
-			| expression OPA_DEC 	{dbg("unary_expression: a --")}
+			/* надо подумать на счёт этого. Возможно придётся реализовать 
+			   второй тип expression - bracket expression */
+			| literal_string OPA_INC 			{dbg("unary_expression: a ++")}
+			//| LBRACKET_ROUND literal_string RBRACKET_ROUND OPA_INC
+			| literal_string OPA_DEC 			{dbg("unary_expression: a --")}
+			//| LBRACKET_ROUND literal_string RBRACKET_ROUND OPA_DEC
 
 binary_expression:
-			expression OPA_MUL 	expression 	{dbg("binary_expression: a * a")}
-			| expression OPA_DIV    expression	{dbg("binary_expression: a / a")}
-			| expression OPA_MOD    expression	{dbg("binary_expression: a % a")}
-			| expression OPA_SUB 	expression 	{dbg("binary_expression: a - a")}
-			| expression OPA_ADD	expression 	{dbg("binary_expression: a + a")}
+			literal_expression OPA_MUL 		literal_expression 	{dbg("binary_expression: a * a")}
+			| literal_expression OPA_DIV    literal_expression	{dbg("binary_expression: a / a")}
+			| literal_expression OPA_MOD    literal_expression	{dbg("binary_expression: a % a")}
+			| literal_expression OPA_SUB 	literal_expression 	{dbg("binary_expression: a - a")}
+			| literal_expression OPA_ADD	literal_expression 	{dbg("binary_expression: a + a")}
 			                                          
-			| expression OPL_AND	expression 	{dbg("binary_expression: a && a")}	
-			| expression OPL_OR 	expression 	{dbg("binary_expression: a || a")}
-			| expression OPL_EQ 	expression 	{dbg("binary_expression: a == a, a === a")}
-			| expression OPL_NEQ	expression 	{dbg("binary_expression: a != a, a !== a")} 
-			| expression OPL_L  	expression 	{dbg("binary_expression: a < a")}
-			| expression OPL_G  	expression 	{dbg("binary_expression: a > a")}
-			| expression OPL_GE 	expression 	{dbg("binary_expression: a <= a")}
-			| expression OPL_LE 	expression 	{dbg("binary_expression: a >= a")}
+			| literal_expression OPL_AND	literal_expression 	{dbg("binary_expression: a && a")}	
+			| literal_expression OPL_OR 	literal_expression 	{dbg("binary_expression: a || a")}
+			| literal_expression OPL_EQ 	literal_expression 	{dbg("binary_expression: a == a, a === a")}
+			| literal_expression OPL_NEQ	literal_expression 	{dbg("binary_expression: a != a, a !== a")} 
+			| literal_expression OPL_L  	literal_expression 	{dbg("binary_expression: a < a")}
+			| literal_expression OPL_G  	literal_expression 	{dbg("binary_expression: a > a")}
+			| literal_expression OPL_GE 	literal_expression 	{dbg("binary_expression: a <= a")}
+			| literal_expression OPL_LE 	literal_expression 	{dbg("binary_expression: a >= a")}
 			                                          
-			| expression OPB_AND    expression	{dbg("binary_expression: a & a")}
-			| expression OPB_OR     expression	{dbg("binary_expression: a | a")}
-			| expression OPB_XOR    expression	{dbg("binary_expression: a ^ a")}
-			| expression OPB_LSHIFT expression	{dbg("binary_expression: a << a, a <<< a")} 
-			| expression OPB_RSHIFT expression	{dbg("binary_expression: a >> a, a >>> a")}
+			| literal_expression OPB_AND    literal_expression	{dbg("binary_expression: a & a")}
+			| literal_expression OPB_OR     literal_expression	{dbg("binary_expression: a | a")}
+			| literal_expression OPB_XOR    literal_expression	{dbg("binary_expression: a ^ a")}
+			| literal_expression OPB_LSHIFT literal_expression	{dbg("binary_expression: a << a, a <<< a")} 
+			| literal_expression OPB_RSHIFT literal_expression	{dbg("binary_expression: a >> a, a >>> a")}
 
 ternary_expression:
-			expression QMARK expression COLON expression {dbg("ternary_expression: (a > 0) ? 1 : 0")}
+			literal_expression QMARK literal_expression COLON literal_expression {dbg("ternary_expression: (a > 0) ? 1 : 0")}
 
 /* <<<<<<<<<<<------ Expressions ------>>>>>>>>>>> */
 
 			
 /////////////////--------------- literals
 
-constant_string: CSTRING 						{dbg("Constant string");}
 literal_string : OBJ_NAME 						{dbg("Literal string")	}
+constant_string: CSTRING 						{dbg("Constant string");}
 literal_number: LITERAL_NUMBER 					{dbg("Literal number")	}
 
 /////////////////--------------- literals

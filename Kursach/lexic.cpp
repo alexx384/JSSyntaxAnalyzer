@@ -664,7 +664,7 @@ char *yytext;
 	#define UP 		g_yypos.incLinePos(yyleng);
 	
 	// update position after new line
-	#define UPNL 	g_yypos.getLine();
+	#define UPNL 	g_yypos.nextLine();
 	
 #line 670 "lexic.cpp"
 
@@ -1535,7 +1535,7 @@ case 123:
 YY_RULE_SETUP
 #line 220 "lexic.l"
 /* Spaces: operation splitter */ {
-	//g_yystat.yystartpos = g_yystat.yyglobalpos;
+	UP
 	return END_OP;
 }
 	YY_BREAK
@@ -1543,7 +1543,7 @@ case 124:
 YY_RULE_SETUP
 #line 225 "lexic.l"
 /* Spaces: newline */ {
-UPNL;
+	UPNL;
 }
 	YY_BREAK
 case 125:
