@@ -21,6 +21,7 @@
 digit 			[0-9]
 hexdigit		[0-9a-fA-F]
 mantissa 		({digit}+(\.{digit}*)?)|(\.{digit}+)
+unch			[\n ]*
 letter [a-zA-Z]
 
 
@@ -90,8 +91,6 @@ UPNL;
 	<<EOF>>		{ yyerror("EOF but no end */ symbol found\n");	}
 	.			{ UP /*ignore*/ 								}
 }
-
-
 
 
 "abstract"	    /* JZ reserved word */ 	{ UP return ABSTRACT; 	}
@@ -224,6 +223,7 @@ UP
 
 "\n" /* Spaces: newline */ {
 	UPNL;
+	//return ENDLINE;
 }
 
 . 	/* Lex error */  {

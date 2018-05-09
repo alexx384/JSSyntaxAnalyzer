@@ -654,7 +654,7 @@ char *yytext;
 
 #define const_string2 3
 
-#line 28 "lexic.l"
+#line 29 "lexic.l"
 	//yytext : a character array that contains the actual string that matched a pattern.
 	//yyleng : the no. of characters matched.
 	
@@ -813,7 +813,7 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
 
-#line 41 "lexic.l"
+#line 42 "lexic.l"
 
 
 #line 820 "lexic.cpp"
@@ -901,14 +901,14 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 43 "lexic.l"
+#line 44 "lexic.l"
 /* integer number */ {
 	UP	return INT_NUM;
 }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 47 "lexic.l"
+#line 48 "lexic.l"
 /* Float number */ {
 UP
 
@@ -917,38 +917,38 @@ return LITERAL_NUMBER;
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 56 "lexic.l"
+#line 57 "lexic.l"
 /* Const string */	{ UP BEGIN(const_string1); }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 57 "lexic.l"
+#line 58 "lexic.l"
 /* Const string */	{ UP BEGIN(const_string2); }
 	YY_BREAK
 
 
 case 5:
 YY_RULE_SETUP
-#line 61 "lexic.l"
+#line 62 "lexic.l"
 { UP BEGIN(0); return CSTRING; 							}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 62 "lexic.l"
+#line 63 "lexic.l"
 { UP /* escape character*/								}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 63 "lexic.l"
+#line 64 "lexic.l"
 { UPNL; yyerror("Next line but no end ' symbol found\n"); 	}
 	YY_BREAK
 case YY_STATE_EOF(const_string1):
-#line 64 "lexic.l"
+#line 65 "lexic.l"
 { yyerror("EOF but no end ' symbol found\n"); 				}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 65 "lexic.l"
+#line 66 "lexic.l"
 { UP /*ignore*/ 											}
 	YY_BREAK
 
@@ -956,32 +956,32 @@ YY_RULE_SETUP
 
 case 9:
 YY_RULE_SETUP
-#line 70 "lexic.l"
+#line 71 "lexic.l"
 { UP BEGIN(0); return CSTRING;							}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 71 "lexic.l"
+#line 72 "lexic.l"
 { UP /* escape character*/								}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 72 "lexic.l"
+#line 73 "lexic.l"
 { UPNL; yyerror("Next line but no end \" symbol found\n");	}
 	YY_BREAK
 case YY_STATE_EOF(const_string2):
-#line 73 "lexic.l"
+#line 74 "lexic.l"
 { yyerror("EOF but no end \" symbol found\n");				}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 74 "lexic.l"
+#line 75 "lexic.l"
 { UP /*ignore*/ 											}
 	YY_BREAK
 
 case 13:
 YY_RULE_SETUP
-#line 79 "lexic.l"
+#line 80 "lexic.l"
 /* Comments: single line comment */ {
 UPNL;  
 /* ignore */
@@ -989,551 +989,551 @@ UPNL;
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 84 "lexic.l"
+#line 85 "lexic.l"
 /* Comments: multiple line comment */ { UP BEGIN(long_comment); }
 	YY_BREAK
 
 
 case 15:
 YY_RULE_SETUP
-#line 88 "lexic.l"
+#line 89 "lexic.l"
 { UP BEGIN(0); 								}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 89 "lexic.l"
+#line 90 "lexic.l"
 { UPNL; 										}
 	YY_BREAK
 case YY_STATE_EOF(long_comment):
-#line 90 "lexic.l"
+#line 91 "lexic.l"
 { yyerror("EOF but no end */ symbol found\n");	}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 91 "lexic.l"
+#line 92 "lexic.l"
 { UP /*ignore*/ 								}
 	YY_BREAK
 
 case 18:
 YY_RULE_SETUP
-#line 97 "lexic.l"
+#line 96 "lexic.l"
 /* JZ reserved word */ 	{ UP return ABSTRACT; 	}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 98 "lexic.l"
+#line 97 "lexic.l"
 /* JZ reserved word */	{ UP return BOOLEAN; 		}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 99 "lexic.l"
+#line 98 "lexic.l"
 /* JZ reserved word */  { UP return BREAK; 		}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 100 "lexic.l"
+#line 99 "lexic.l"
 /* JZ reserved word */  { UP return BYTE; 		}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 101 "lexic.l"
+#line 100 "lexic.l"
 /* JZ reserved word */  { UP return CASE; 		}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 102 "lexic.l"
+#line 101 "lexic.l"
 /* JZ reserved word */  { UP return CATCH; 		}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 103 "lexic.l"
+#line 102 "lexic.l"
 /* JZ reserved word */  { UP return CHAR; 		}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 104 "lexic.l"
+#line 103 "lexic.l"
 /* JZ reserved word */  { UP return CLASS; 		}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 105 "lexic.l"
+#line 104 "lexic.l"
 /* JZ reserved word */  { UP return CONST; 		}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 106 "lexic.l"
+#line 105 "lexic.l"
 /* JZ reserved word */  { UP return CONTINUE; 	}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 107 "lexic.l"
+#line 106 "lexic.l"
 /* JZ reserved word */  { UP return DEBUGGER; 	}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 108 "lexic.l"
+#line 107 "lexic.l"
 /* JZ reserved word */  { UP return DEFAULT; 		}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 109 "lexic.l"
+#line 108 "lexic.l"
 /* JZ reserved word */  { UP return DELETE; 		}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 110 "lexic.l"
+#line 109 "lexic.l"
 /* JZ reserved word */  { UP return DO; 			}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 111 "lexic.l"
+#line 110 "lexic.l"
 /* JZ reserved word */  { UP return DOUBLE; 		}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 112 "lexic.l"
+#line 111 "lexic.l"
 /* JZ reserved word */  { UP return ELSE; 		}	
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 113 "lexic.l"
+#line 112 "lexic.l"
 /* JZ reserved word */  { UP return ENUM; 		}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 114 "lexic.l"
+#line 113 "lexic.l"
 /* JZ reserved word */  { UP return EXPORT; 		}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 115 "lexic.l"
+#line 114 "lexic.l"
 /* JZ reserved word */  { UP return EXTENDS; 		}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 116 "lexic.l"
+#line 115 "lexic.l"
 /* JZ reserved word */  { UP return FALSE; 		}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 117 "lexic.l"
+#line 116 "lexic.l"
 /* JZ reserved word */  { UP return FINAL; 		}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 118 "lexic.l"
+#line 117 "lexic.l"
 /* JZ reserved word */  { UP return FINALLY; 		}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 119 "lexic.l"
+#line 118 "lexic.l"
 /* JZ reserved word */  { UP return FLOAT; 		}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 120 "lexic.l"
+#line 119 "lexic.l"
 /* JZ reserved word */  { UP return FOR; 			}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 121 "lexic.l"
+#line 120 "lexic.l"
 /* JZ reserved word */  { UP return FUNCTION; 	}
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 122 "lexic.l"
+#line 121 "lexic.l"
 /* JZ reserved word */  { UP return GOTO; 		}
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 123 "lexic.l"
+#line 122 "lexic.l"
 /* JZ reserved word */  { UP return IF; 			}
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 124 "lexic.l"
+#line 123 "lexic.l"
 /* JZ reserved word */  { UP return IMPLEMENTS; 	}
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 125 "lexic.l"
+#line 124 "lexic.l"
 /* JZ reserved word */  { UP return IMPORT; 		}
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 126 "lexic.l"
+#line 125 "lexic.l"
 /* JZ reserved word */  { UP return IN; 			}
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 127 "lexic.l"
+#line 126 "lexic.l"
 /* JZ reserved word */  { UP return INSTANCEOF; 	}
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 128 "lexic.l"
+#line 127 "lexic.l"
 /* JZ reserved word */  { UP return INT; 			}
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 129 "lexic.l"
+#line 128 "lexic.l"
 /* JZ reserved word */  { UP return INTERFACE; 	}
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 130 "lexic.l"
+#line 129 "lexic.l"
 /* JZ reserved word */  { UP return LONG; 		}
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 131 "lexic.l"
+#line 130 "lexic.l"
 /* JZ reserved word */  { UP return NATIVE; 		}
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 132 "lexic.l"
+#line 131 "lexic.l"
 /* JZ reserved word */  { UP return NEW; 			}
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 133 "lexic.l"
+#line 132 "lexic.l"
 /* JZ reserved word */  { UP return NUL; 			}	
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 134 "lexic.l"
+#line 133 "lexic.l"
 /* JZ reserved word */  { UP return PACKAGE; 		}
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 135 "lexic.l"
+#line 134 "lexic.l"
 /* JZ reserved word */  { UP return PRIVATE; 		}
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 136 "lexic.l"
+#line 135 "lexic.l"
 /* JZ reserved word */  { UP return PROTECTED; 	}
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 137 "lexic.l"
+#line 136 "lexic.l"
 /* JZ reserved word */  { UP return PUBLIC; 		}
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 138 "lexic.l"
+#line 137 "lexic.l"
 /* JZ reserved word */  { UP return RETURN; 		}
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 139 "lexic.l"
+#line 138 "lexic.l"
 /* JZ reserved word */  { UP return SHORT; 		}	
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 140 "lexic.l"
+#line 139 "lexic.l"
 /* JZ reserved word */  { UP return STATIC; 		}
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 141 "lexic.l"
+#line 140 "lexic.l"
 /* JZ reserved word */  { UP return SUPER; 		}
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 142 "lexic.l"
+#line 141 "lexic.l"
 /* JZ reserved word */  { UP return SWITCH; 		}
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 143 "lexic.l"
+#line 142 "lexic.l"
 /* JZ reserved word */  { UP return SYNCHRONIZED; }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 144 "lexic.l"
+#line 143 "lexic.l"
 /* JZ reserved word */  { UP return THIS; 		}
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 145 "lexic.l"
+#line 144 "lexic.l"
 /* JZ reserved word */  { UP return THROW; 		}
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 146 "lexic.l"
+#line 145 "lexic.l"
 /* JZ reserved word */  { UP return THROWS; 		}
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 147 "lexic.l"
+#line 146 "lexic.l"
 /* JZ reserved word */  { UP return TRANSIENT;	}
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 148 "lexic.l"
+#line 147 "lexic.l"
 /* JZ reserved word */  { UP return TRUE; 		}
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 149 "lexic.l"
+#line 148 "lexic.l"
 /* JZ reserved word */  { UP return TRY; 			}
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 150 "lexic.l"
+#line 149 "lexic.l"
 /* JZ reserved word */  { UP return TYPEOF; 		}
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 151 "lexic.l"
+#line 150 "lexic.l"
 /* JZ reserved word */  { UP return VAR; 			}
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 152 "lexic.l"
+#line 151 "lexic.l"
 /* JZ reserved word */  { UP return VOID; 		}
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 153 "lexic.l"
+#line 152 "lexic.l"
 /* JZ reserved word */  { UP return VOLATILE; 	}
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 154 "lexic.l"
+#line 153 "lexic.l"
 /* JZ reserved word */  { UP return WHILE; 		}
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 155 "lexic.l"
+#line 154 "lexic.l"
 /* JZ reserved word */  { UP return WITH; 		}
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
-#line 160 "lexic.l"
+#line 159 "lexic.l"
 /* Variable/function name */ {
 UP	return OBJ_NAME;
 }
 	YY_BREAK
 case 78:
-#line 167 "lexic.l"
+#line 166 "lexic.l"
 case 79:
-#line 168 "lexic.l"
+#line 167 "lexic.l"
 case 80:
 YY_RULE_SETUP
-#line 168 "lexic.l"
+#line 167 "lexic.l"
 { UP return OPL_NOT; }
 	YY_BREAK
 case 81:
 YY_RULE_SETUP
-#line 169 "lexic.l"
+#line 168 "lexic.l"
 { UP return OPL_AND; }
 	YY_BREAK
 case 82:
 YY_RULE_SETUP
-#line 170 "lexic.l"
+#line 169 "lexic.l"
 { UP return OPL_OR; 	}
 	YY_BREAK
 case 83:
 YY_RULE_SETUP
-#line 171 "lexic.l"
+#line 170 "lexic.l"
 { UP return OPL_L; 	}
 	YY_BREAK
 case 84:
 YY_RULE_SETUP
-#line 172 "lexic.l"
+#line 171 "lexic.l"
 { UP return OPL_G; 	}
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
-#line 173 "lexic.l"
+#line 172 "lexic.l"
 { UP return OPL_LE; 	}
 	YY_BREAK
 case 86:
 YY_RULE_SETUP
-#line 174 "lexic.l"
+#line 173 "lexic.l"
 { UP return OPL_GE; 	}
 	YY_BREAK
 case 87:
-#line 177 "lexic.l"
+#line 176 "lexic.l"
 case 88:
-#line 178 "lexic.l"
+#line 177 "lexic.l"
 case 89:
 YY_RULE_SETUP
-#line 178 "lexic.l"
+#line 177 "lexic.l"
 { UP return OP_ASSIGN_ADD; }
 	YY_BREAK
 case 90:
 YY_RULE_SETUP
-#line 179 "lexic.l"
+#line 178 "lexic.l"
 { UP return OP_ASSIGN_SUB; }
 	YY_BREAK
 case 91:
 YY_RULE_SETUP
-#line 180 "lexic.l"
+#line 179 "lexic.l"
 { UP return OP_ASSIGN_POW; }
 	YY_BREAK
 case 92:
 YY_RULE_SETUP
-#line 181 "lexic.l"
+#line 180 "lexic.l"
 { UP return OP_ASSIGN_MUL; }
 	YY_BREAK
 case 93:
 YY_RULE_SETUP
-#line 182 "lexic.l"
+#line 181 "lexic.l"
 { UP return OP_ASSIGN_DIV; }
 	YY_BREAK
 case 94:
 YY_RULE_SETUP
-#line 183 "lexic.l"
+#line 182 "lexic.l"
 { UP return OP_ASSIGN_MOD; }
 	YY_BREAK
 case 95:
 YY_RULE_SETUP
-#line 184 "lexic.l"
+#line 183 "lexic.l"
 { UP return OP_ASSIGN_AND; }
 	YY_BREAK
 case 96:
 YY_RULE_SETUP
-#line 185 "lexic.l"
+#line 184 "lexic.l"
 { UP return OP_ASSIGN_OR; }
 	YY_BREAK
 case 97:
 YY_RULE_SETUP
-#line 186 "lexic.l"
+#line 185 "lexic.l"
 { UP return OP_ASSIGN_XOR; }
 	YY_BREAK
 case 98:
 YY_RULE_SETUP
-#line 187 "lexic.l"
+#line 186 "lexic.l"
 { UP return OP_ASSIGN; }
 	YY_BREAK
 case 99:
 YY_RULE_SETUP
-#line 189 "lexic.l"
+#line 188 "lexic.l"
 { UP return OPB_NOT; }
 	YY_BREAK
 case 100:
 YY_RULE_SETUP
-#line 190 "lexic.l"
+#line 189 "lexic.l"
 { UP return OPB_OR;  }
 	YY_BREAK
 case 101:
 YY_RULE_SETUP
-#line 191 "lexic.l"
+#line 190 "lexic.l"
 { UP return OPB_AND; }
 	YY_BREAK
 case 102:
 YY_RULE_SETUP
-#line 192 "lexic.l"
+#line 191 "lexic.l"
 { UP return OPB_XOR; }
 	YY_BREAK
 case 103:
 YY_RULE_SETUP
-#line 193 "lexic.l"
+#line 192 "lexic.l"
 { UP return OPB_LSHIFT; }
 	YY_BREAK
 case 104:
 YY_RULE_SETUP
-#line 194 "lexic.l"
+#line 193 "lexic.l"
 { UP return OPB_RSHIFT; }
 	YY_BREAK
 case 105:
 YY_RULE_SETUP
-#line 196 "lexic.l"
+#line 195 "lexic.l"
 { UP return OPA_INC; }
 	YY_BREAK
 case 106:
 YY_RULE_SETUP
-#line 197 "lexic.l"
+#line 196 "lexic.l"
 { UP return OPA_DEC; }
 	YY_BREAK
 case 107:
 YY_RULE_SETUP
-#line 198 "lexic.l"
+#line 197 "lexic.l"
 { UP return OPA_MUL; }
 	YY_BREAK
 case 108:
 YY_RULE_SETUP
-#line 199 "lexic.l"
+#line 198 "lexic.l"
 { UP return OPA_DIV; }
 	YY_BREAK
 case 109:
 YY_RULE_SETUP
-#line 200 "lexic.l"
+#line 199 "lexic.l"
 { UP return OPA_MOD; }
 	YY_BREAK
 case 110:
 YY_RULE_SETUP
-#line 201 "lexic.l"
+#line 200 "lexic.l"
 { UP return OPA_ADD; }
 	YY_BREAK
 case 111:
 YY_RULE_SETUP
-#line 202 "lexic.l"
+#line 201 "lexic.l"
 { UP return OPA_SUB; }
 	YY_BREAK
 case 112:
 YY_RULE_SETUP
-#line 204 "lexic.l"
+#line 203 "lexic.l"
 { UP return DOT; }
 	YY_BREAK
 case 113:
 YY_RULE_SETUP
-#line 205 "lexic.l"
+#line 204 "lexic.l"
 { UP return COMA; }
 	YY_BREAK
 case 114:
 YY_RULE_SETUP
-#line 206 "lexic.l"
+#line 205 "lexic.l"
 { UP return COLON; }
 	YY_BREAK
 case 115:
 YY_RULE_SETUP
-#line 207 "lexic.l"
+#line 206 "lexic.l"
 { UP return QMARK; }
 	YY_BREAK
 case 116:
 YY_RULE_SETUP
-#line 208 "lexic.l"
+#line 207 "lexic.l"
 { UP return LBRACKET_ROUND; }
 	YY_BREAK
 case 117:
 YY_RULE_SETUP
-#line 209 "lexic.l"
+#line 208 "lexic.l"
 { UP return RBRACKET_ROUND; }
 	YY_BREAK
 case 118:
 YY_RULE_SETUP
-#line 210 "lexic.l"
+#line 209 "lexic.l"
 { UP return LBRACKET_SQUARE;}
 	YY_BREAK
 case 119:
 YY_RULE_SETUP
-#line 211 "lexic.l"
+#line 210 "lexic.l"
 { UP return RBRACKET_SQUARE;}
 	YY_BREAK
 case 120:
 YY_RULE_SETUP
-#line 212 "lexic.l"
+#line 211 "lexic.l"
 { UP return LBRACKET_CURLY; }
 	YY_BREAK
 case 121:
 YY_RULE_SETUP
-#line 213 "lexic.l"
+#line 212 "lexic.l"
 { UP return RBRACKET_CURLY; }
 	YY_BREAK
 case 122:
 YY_RULE_SETUP
-#line 216 "lexic.l"
+#line 215 "lexic.l"
 /* Spaces: tab and space */ {
 UP	
 }
 	YY_BREAK
 case 123:
 YY_RULE_SETUP
-#line 220 "lexic.l"
+#line 219 "lexic.l"
 /* Spaces: operation splitter */ {
 	UP
 	return END_OP;
@@ -1541,9 +1541,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 124:
 YY_RULE_SETUP
-#line 225 "lexic.l"
+#line 224 "lexic.l"
 /* Spaces: newline */ {
 	UPNL;
+	//return ENDLINE;
 }
 	YY_BREAK
 case 125:
@@ -1559,7 +1560,7 @@ YY_RULE_SETUP
 #line 234 "lexic.l"
 ECHO;
 	YY_BREAK
-#line 1563 "lexic.cpp"
+#line 1564 "lexic.cpp"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
