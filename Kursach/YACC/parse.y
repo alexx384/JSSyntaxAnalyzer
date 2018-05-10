@@ -94,7 +94,6 @@ OPA_DEC // '--'
 
 /////////////////--------------- inline C code
 
-// start from label
 %start block
 
 // low priority downto max priority
@@ -123,42 +122,46 @@ OPA_DEC // '--'
 
 block:
 			expression END_OP									{dbg("block: a + 0;")}
-			//| expression ENDLINE 								{dbg("block: a + 0\\n")}
 			| block expression END_OP							{dbg("block: ... a + 0;")}
-			//| block expression ENDLINE 							{dbg("block: ... a + 0\\n")}
 
 			| var_init END_OP									{dbg("block: variable initialization;")}
-			//| var_init ENDLINE									{dbg("block: variable initialization\\n")}
 			| block var_init END_OP								{dbg("block: ... ; variable initialization;")}
-			//| block var_init ENDLINE							{dbg("block: ... \\n variable initialization;")}
 
 			| obj_and_method END_OP								{dbg("block: document.writeln('Hello World');")}
-			//| obj_and_method ENDLINE							{dbg("block: document.writeln('Hello World')\\n")}
 			| block obj_and_method END_OP						{dbg("block: ... document.writeln('Hello World');")}
-			//| block obj_and_method ENDLINE					{dbg("block: ... document.writeln('Hello World')\\n")}
 
 			| LBRACKET_CURLY block RBRACKET_CURLY				{dbg("block: { block }")}
 			| block LBRACKET_CURLY block RBRACKET_CURLY			{dbg("block: ... { block }")}
 
-			| if_operator 										{dbg("block: if ()")}
-
-			| switch_operator 									{dbg("block: switch")}							
-
-single_block:
-			expression END_OP									{dbg("block: a + 0;")}
-			//| expression ENDLINE 								{dbg("block: a + 0\\n")}
-
-			| var_init END_OP									{dbg("block: variable initialization;")}
-			//| var_init ENDLINE									{dbg("block: variable initialization\\n")}
-
-			| obj_and_method END_OP								{dbg("block: document.writeln('Hello World');")}
-			//| obj_and_method ENDLINE							{dbg("block: document.writeln('Hello World')\\n")}
-
-			| LBRACKET_CURLY block RBRACKET_CURLY				{dbg("block: { block }")}
+			| LBRACKET_CURLY RBRACKET_CURLY						{dbg("block: { }")}
+			| block LBRACKET_CURLY RBRACKET_CURLY				{dbg("block: { }")}
 
 			| if_operator 										{dbg("block: if ()")}
+			| block if_operator 								{dbg("block: ... if ()")}
 
 			| switch_operator 									{dbg("block: switch")}
+			| block switch_operator								{dbg("block: ... switch")}							
+
+			| while_operator 									{dbg("block: while")}
+			| block while_operator 								{dbg("block: ... while")}
+
+			| for_operator 										{dbg("block: for")}
+			| block for_operator 								{dbg("block: ... for")}
+
+			| do_operator 										{dbg("block: do ... while();")}
+			| block do_operator 								{dbg("block: ... do ... while();")}
+
+do_operator:
+			DO single_block WHILE LBRACKET_ROUND expression RBRACKET_ROUND END_OP 	{dbg("do_operator: do ... while(expression);")}
+
+while_operator:
+			WHILE LBRACKET_ROUND expression RBRACKET_ROUND single_block 	{dbg("while_operator: while (expression) block")}
+
+for_operator:
+			FOR LBRACKET_ROUND expression END_OP expression END_OP expression RBRACKET_ROUND single_block 	{dbg("for_operator: for(i=0; i < 4; i++) block")}
+			| FOR LBRACKET_ROUND literal_string IN object RBRACKET_ROUND single_block 						{dbg("for(i in obj) block")}
+
+/* >>>>>>>>>>>------ Switch statement ------<<<<<<<<<<< */
 
 switch_operator:
 			SWITCH LBRACKET_ROUND expression RBRACKET_ROUND LBRACKET_CURLY case_expression RBRACKET_CURLY
@@ -167,10 +170,37 @@ case_expression:
 			CASE expression COLON block 						{dbg("case_expression: case 1: block")}
 			| case_expression CASE expression COLON block 		{dbg("case_expression: ... case 1: block")}
 
+/* <<<<<<<<<<<------ Switch statement ------>>>>>>>>>>> */
+
+/* >>>>>>>>>>>------ If statement ------<<<<<<<<<<< */
+
 if_operator:
 			IF LBRACKET_ROUND expression RBRACKET_ROUND single_block %prec NO_ELSE	 	 {dbg("if_operator: if (expression) block")}
 			| IF LBRACKET_ROUND expression RBRACKET_ROUND single_block ELSE single_block {dbg("if_operator: if (expression) single_stat_blck else single_stat_blck")}
 
+
+single_block:
+			expression END_OP									{dbg("single_block: a + 0;")}
+
+			| var_init END_OP									{dbg("single_block: variable initialization;")}
+
+			| obj_and_method END_OP								{dbg("single_block: document.writeln('Hello World');")}
+
+			| LBRACKET_CURLY block RBRACKET_CURLY				{dbg("single_block: { block }")}
+
+			| LBRACKET_CURLY RBRACKET_CURLY						{dbg("single_block: { }")}
+
+			| if_operator 										{dbg("single_block: if ()")}
+
+			| switch_operator 									{dbg("single_block: switch")}
+
+			| while_operator 									{dbg("single_block: while")}
+
+			| for_operator 										{dbg("single_block: for")}
+
+			| do_operator 										{dbg("single_block: do ... while();")}
+
+/* <<<<<<<<<<<------ If statement ------>>>>>>>>>>> */
 
 /* >>>>>>>>>>>------ Objects ------<<<<<<<<<<< */
 
@@ -218,9 +248,12 @@ expression:
 
 			LBRACKET_ROUND expression RBRACKET_ROUND			{dbg("expression: (a+0)")}
 
+			//| operation_assign
+
 			| binary_expression 								{dbg("expression: binary_expression")}
 			| ternary_expression 								{dbg("expression: ternary_expression")}
 			| unary_expression									{dbg("expression: unary_expression")}
+//			| logical_expression 								{dbg("expression: logical_expression")}
 
 			| literal_number 									{dbg("expression: literal_number")}
 			| constant_string 									{dbg("expression: constant_string")}
@@ -231,8 +264,8 @@ expression:
 			| useful_words										{dbg("expression: useful_words")}
 
 useful_words:
-			BREAK 												{dbg("useful_words: break")}
-			| CONTINUE 											{dbg("useful_words: continue")}
+			NUL 												{dbg("useful_words: null")}
+			//| CONTINUE 											{dbg("useful_words: continue")}
 
 unary_expression:
 			/* prefix expression */
