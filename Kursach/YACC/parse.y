@@ -85,8 +85,23 @@ OPA_DEC // '--'
 	#include "KurCommon.h"
 	
 	#ifdef _DEBUG
+	#define dbgCoBlck(str) SetTextColor(LIGHT_BLUE);\
+								 std::cout << str << std::endl;\
+						   RevertColors();
+
+	#define dbgCoExpr(str) SetTextColor(LIGHT_YELLOW);\
+								 std::cout << str << std::endl;\
+						   RevertColors();
+
+	#define dbgCoOper(str) SetTextColor(LIGHT_GREEN);\
+								 std::cout << str << std::endl;\
+						   RevertColors();
+
 	#define dbg(str) std::cout << str << std::endl;
 	#else
+	#define dbgCoBlck(str)
+	#define dbgCoExpr(str)
+	#define dbgCoOper(str)
 	#define dbg(str)
 	#endif
 %}
@@ -121,27 +136,29 @@ OPA_DEC // '--'
 %%
 
 block:
-			expression END_OP									{dbg("block: a + 0;")}
-			| block expression END_OP							{dbg("block: ... a + 0;")}
+			expression END_OP									{dbgCoBlck("block: a + 0;")}
+			| block expression END_OP							{dbgCoBlck("block: ... a + 0;")}
 
-			| var_init END_OP									{dbg("block: variable initialization;")}
-			| block var_init END_OP								{dbg("block: ... ; variable initialization;")}
+			| var_init END_OP									{dbgCoBlck("block: variable initialization;")}
+			| block var_init END_OP								{dbgCoBlck("block: ... ; variable initialization;")}
 
-			| LBRACKET_CURLY block RBRACKET_CURLY				{dbg("block: { block }")}
-			| block LBRACKET_CURLY block RBRACKET_CURLY			{dbg("block: ... { block }")}
+			| LBRACKET_CURLY block RBRACKET_CURLY				{dbgCoBlck("block: { block }")}
+			| block LBRACKET_CURLY block RBRACKET_CURLY			{dbgCoBlck("block: ... { block }")}
 
-			| LBRACKET_CURLY RBRACKET_CURLY						{dbg("block: { }")}
-			| block LBRACKET_CURLY RBRACKET_CURLY				{dbg("block: { }")}
+			| LBRACKET_CURLY RBRACKET_CURLY						{dbgCoBlck("block: { }")}
+			| block LBRACKET_CURLY RBRACKET_CURLY				{dbgCoBlck("block: { }")}
 
-			| operators 										{dbg("block: operators")}
-			| block operators									{dbg("block: ... operators")}
+			| operators 										{dbgCoBlck("block: operators")}
+			| block operators									{dbgCoBlck("block: ... operators")}
 
-			| function 											{dbg("block: function")}
+			| function 											{dbgCoBlck("block: function")}
+
+			| block literal_string COLON 						{dbgCoBlck("block: label")} 
 
 /* >>>>>>>>>>>------ Switch statement ------<<<<<<<<<<< */
 
 function:
-			FUNCTION func_name LBRACKET_ROUND func_parameters RBRACKET_ROUND {dbg("Is Done")} LBRACKET_CURLY func_body RBRACKET_CURLY 	{dbg("function: function func_name (parameters) { func_body }")}
+			FUNCTION func_name LBRACKET_ROUND func_parameters RBRACKET_ROUND LBRACKET_CURLY func_body RBRACKET_CURLY 	{dbg("function: function func_name (parameters) { func_body }")}
 
 func_body:
 			block 												{dbg("func_body: block")}
@@ -159,23 +176,23 @@ func_parameters:
 /* <<<<<<<<<<<------ Switch statement ------>>>>>>>>>>> */
 
 operators:
-			if_operator 										{dbg("operators: if ()")}
+			if_operator 										{dbgCoOper("operators: if ()")}
 
-			| switch_operator 									{dbg("operators: switch")}
+			| switch_operator 									{dbgCoOper("operators: switch")}
 
-			| while_operator 									{dbg("operators: while")}
+			| while_operator 									{dbgCoOper("operators: while")}
 
-			| for_operator 										{dbg("operators: for")}
+			| for_operator 										{dbgCoOper("operators: for")}
 
-			| do_operator 										{dbg("operators: do ... while();")}
+			| do_operator 										{dbgCoOper("operators: do ... while();")}
 
-			| try_operator 										{dbg("operators: try");}
+			| try_operator 										{dbgCoOper("operators: try");}
 
-			| throw_operator 									{dbg("operators: throw")}
+			| throw_operator 									{dbgCoOper("operators: throw")}
 
-			| return_operator 									{dbg("operators: return")}
+			| return_operator 									{dbgCoOper("operators: return")}
 
-			| break_operator 									{dbg("operators: break")}
+			| break_operator 									{dbgCoOper("operators: break")}
 
 break_operator:
 			BREAK END_OP
@@ -224,13 +241,14 @@ if_operator:
 			IF LBRACKET_ROUND expression RBRACKET_ROUND single_block %prec NO_ELSE	 	 {dbg("if_operator: if (expression) block")}
 			| IF LBRACKET_ROUND expression RBRACKET_ROUND single_block ELSE single_block {dbg("if_operator: if (expression) single_stat_blck else single_stat_blck")}
 
-
 single_block:
 			expression END_OP									{dbg("single_block: a + 0;")}
 
 			| LBRACKET_CURLY block RBRACKET_CURLY				{dbg("single_block: { block }")}
 
 			| LBRACKET_CURLY RBRACKET_CURLY						{dbg("single_block: { }")}
+
+			| literal_string COLON single_block 				{dbg("single_block: label")}
 
 			| operators 										{dbg("single_block: operators")}
 
@@ -260,24 +278,24 @@ expression:
 			
 			////------ expression operands end
 
-			LBRACKET_ROUND expression RBRACKET_ROUND			{dbg("expression: (a+0)")}
+			LBRACKET_ROUND expression RBRACKET_ROUND			{dbgCoExpr("expression: (a+0)")}
 
-			| assign_expression									{dbg("expression: assign_expression")}
-			| binary_expression 								{dbg("expression: binary_expression")}
-			| ternary_expression 								{dbg("expression: ternary_expression")}
-			| unary_expression									{dbg("expression: unary_expression")}
-			| new_expression 									{dbg("expression: new_expression")}
-			| delete_expression 								{dbg("expression: delete_expression")}
+			| assign_expression									{dbgCoExpr("expression: assign_expression")}
+			| binary_expression 								{dbgCoExpr("expression: binary_expression")}
+			| ternary_expression 								{dbgCoExpr("expression: ternary_expression")}
+			| unary_expression									{dbgCoExpr("expression: unary_expression")}
+			| new_expression 									{dbgCoExpr("expression: new_expression")}
+			| delete_expression 								{dbgCoExpr("expression: delete_expression")}
 
-			| obj_and_method 									{dbg("expression: obj_and_method")}
+			| obj_and_method 									{dbgCoExpr("expression: obj_and_method")}
 
-			| literal_number 									{dbg("expression: literal_number")}
-			| constant_string 									{dbg("expression: constant_string")}
-			//| literal_string 									{dbg("expression: literal_string")}
+			| literal_number 									{dbgCoExpr("expression: literal_number")}
+			| constant_string 									{dbgCoExpr("expression: constant_string")}
+			//| literal_string 									{dbgCoExpr("expression: literal_string")}
 
-			| empty_expression 									{dbg("expression: empty_expression")}
+			| empty_expression 									{dbgCoExpr("expression: empty_expression")}
 
-			| useful_words										{dbg("expression: useful_words")}
+			| useful_words										{dbgCoExpr("expression: useful_words")}
 
 assign_expression:
 			object OP_ASSIGN expression 						{dbg("assign_expression: this.a = 0")}

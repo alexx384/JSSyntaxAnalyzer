@@ -35,3 +35,18 @@ void yyerror(const char* format, ...);
 int yylex();
 
 extern FILE *yyin;
+
+#ifdef _DEBUG
+
+#define LIGHT_GREEN				10
+#define LIGHT_BLUE				11
+#define LIGHT_RED				12
+#define LIGHT_PURPLE			13
+#define LIGHT_YELLOW			14
+#define LIGTH_WHITE				15
+
+void InitConsole();
+void SetTextColor(unsigned int color);
+void RevertColors();
+
+#endif // _DEBUG

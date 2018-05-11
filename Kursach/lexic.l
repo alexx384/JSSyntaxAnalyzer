@@ -160,10 +160,6 @@ UPNL; DL(single line comment);
 "while"         /* JZ reserved word */  { UP DL(WHILE); return WHILE; 		}
 "with"          /* JZ reserved word */  { UP DL(WITH); return WITH; 		}
 
-[_$a-zA-Z]+[_$a-zA-Z0-9]*+(:) /* Variable/function name */ {
-UP DL(LABEL);
-}
-
 
 [_$a-zA-Z]+[_$a-zA-Z0-9]* /* Variable/function name */ {
 UP DL(OBJ_NAME);	return OBJ_NAME;

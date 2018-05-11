@@ -15,13 +15,17 @@ int main(int argc, const char *argv[])
 		return ERROR;
 	}
 
+#ifdef _DEBUG
+	InitConsole();
+#endif // _DEBUG
+
+
 	yyin = fopen(argv[1], "r");
 
 	if (!yyin)
 	{
 		std::cout << "Error: The file is doesn't exist" << std::endl;
 	}
-
 
 	int i = yyparse();
 
