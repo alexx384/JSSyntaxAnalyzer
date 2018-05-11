@@ -747,11 +747,11 @@ char *yytext;
 	// update position after new line
 	#define UPNL 	g_yypos.nextLine();
 	
-	#define DEBUGLEX
+	//#define DEBUGLEX
 
 	#ifdef DEBUGLEX
 		#define DL(x) std::cout << #x << std::endl;
-	#elif
+	#else
 		#define DL(x)
 	#endif
 #line 758 "lexic.cpp"

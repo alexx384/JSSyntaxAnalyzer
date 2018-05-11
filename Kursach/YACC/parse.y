@@ -127,29 +127,74 @@ block:
 			| var_init END_OP									{dbg("block: variable initialization;")}
 			| block var_init END_OP								{dbg("block: ... ; variable initialization;")}
 
-			| obj_and_method END_OP								{dbg("block: document.writeln('Hello World');")}
-			| block obj_and_method END_OP						{dbg("block: ... document.writeln('Hello World');")}
-
 			| LBRACKET_CURLY block RBRACKET_CURLY				{dbg("block: { block }")}
 			| block LBRACKET_CURLY block RBRACKET_CURLY			{dbg("block: ... { block }")}
 
 			| LBRACKET_CURLY RBRACKET_CURLY						{dbg("block: { }")}
 			| block LBRACKET_CURLY RBRACKET_CURLY				{dbg("block: { }")}
 
-			| if_operator 										{dbg("block: if ()")}
-			| block if_operator 								{dbg("block: ... if ()")}
+			| operators 										{dbg("block: operators")}
+			| block operators									{dbg("block: ... operators")}
 
-			| switch_operator 									{dbg("block: switch")}
-			| block switch_operator								{dbg("block: ... switch")}							
+			| function 											{dbg("block: function")}
 
-			| while_operator 									{dbg("block: while")}
-			| block while_operator 								{dbg("block: ... while")}
+/* >>>>>>>>>>>------ Switch statement ------<<<<<<<<<<< */
 
-			| for_operator 										{dbg("block: for")}
-			| block for_operator 								{dbg("block: ... for")}
+function:
+			FUNCTION func_name LBRACKET_ROUND func_parameters RBRACKET_ROUND {dbg("Is Done")} LBRACKET_CURLY func_body RBRACKET_CURLY 	{dbg("function: function func_name (parameters) { func_body }")}
 
-			| do_operator 										{dbg("block: do ... while();")}
-			| block do_operator 								{dbg("block: ... do ... while();")}
+func_body:
+			block 												{dbg("func_body: block")}
+			|													{dbg("func_body: <nothing>")}
+
+func_name:
+			literal_string 										{dbg("func_name: name")}
+			| 													{dbg("func_name: <nothing>")}
+
+func_parameters:
+			literal_string 										{dbg("func_parameters: a")}		
+			| func_parameters COMA literal_string 				{dbg("func_parameters: ... , a")}				
+			| 													{dbg("func_parameters: <nothing>")}		
+
+/* <<<<<<<<<<<------ Switch statement ------>>>>>>>>>>> */
+
+operators:
+			if_operator 										{dbg("operators: if ()")}
+
+			| switch_operator 									{dbg("operators: switch")}
+
+			| while_operator 									{dbg("operators: while")}
+
+			| for_operator 										{dbg("operators: for")}
+
+			| do_operator 										{dbg("operators: do ... while();")}
+
+			| try_operator 										{dbg("operators: try");}
+
+			| throw_operator 									{dbg("operators: throw")}
+
+			| return_operator 									{dbg("operators: return")}
+
+			| break_operator 									{dbg("operators: break")}
+
+break_operator:
+			BREAK END_OP
+			| BREAK literal_string END_OP 
+
+return_operator:
+			RETURN expression END_OP
+
+throw_operator:
+			THROW expression END_OP
+
+try_operator:
+			TRY LBRACKET_CURLY block RBRACKET_CURLY catch_operator 										{dbg("try_operator: try { block } catch_operator")}
+			| TRY LBRACKET_CURLY block RBRACKET_CURLY FINALLY LBRACKET_CURLY block RBRACKET_CURLY		{dbg("try_operator: try { block } finally { block }")}
+
+catch_operator:
+			CATCH LBRACKET_ROUND literal_string RBRACKET_ROUND LBRACKET_CURLY block RBRACKET_CURLY 		{dbg("catch_operator: catch (a) { block }")}
+			| CATCH LBRACKET_CURLY block RBRACKET_CURLY													{dbg("catch_operator: catch { block }")}
+			| catch_operator FINALLY LBRACKET_CURLY block RBRACKET_CURLY 								{dbg("catch_operator: ... finally { block }")}
 
 do_operator:
 			DO single_block WHILE LBRACKET_ROUND expression RBRACKET_ROUND END_OP 	{dbg("do_operator: do ... while(expression);")}
@@ -169,6 +214,7 @@ switch_operator:
 case_expression:
 			CASE expression COLON block 						{dbg("case_expression: case 1: block")}
 			| case_expression CASE expression COLON block 		{dbg("case_expression: ... case 1: block")}
+			| DEFAULT COLON block 								{dbg("case_expression: default: block")}
 
 /* <<<<<<<<<<<------ Switch statement ------>>>>>>>>>>> */
 
@@ -182,63 +228,31 @@ if_operator:
 single_block:
 			expression END_OP									{dbg("single_block: a + 0;")}
 
-			| var_init END_OP									{dbg("single_block: variable initialization;")}
-
-			| obj_and_method END_OP								{dbg("single_block: document.writeln('Hello World');")}
-
 			| LBRACKET_CURLY block RBRACKET_CURLY				{dbg("single_block: { block }")}
 
 			| LBRACKET_CURLY RBRACKET_CURLY						{dbg("single_block: { }")}
 
-			| if_operator 										{dbg("single_block: if ()")}
-
-			| switch_operator 									{dbg("single_block: switch")}
-
-			| while_operator 									{dbg("single_block: while")}
-
-			| for_operator 										{dbg("single_block: for")}
-
-			| do_operator 										{dbg("single_block: do ... while();")}
+			| operators 										{dbg("single_block: operators")}
 
 /* <<<<<<<<<<<------ If statement ------>>>>>>>>>>> */
 
-/* >>>>>>>>>>>------ Objects ------<<<<<<<<<<< */
-
-obj_and_method:
-			object LBRACKET_ROUND parameters RBRACKET_ROUND {dbg("obj_and_method: f(expr)")}
-
-parameters:
-			expression 											{dbg("parameters: 1")}
-			| parameters DOT expression 						{dbg("parameters: ... , 1")}
-
-object:
-			literal_string	 									{dbg("object: a")}
-			| object DOT literal_string							{dbg("object: ... .a")}
-
-/* <<<<<<<<<<<------ Objects ------>>>>>>>>>>> */
 
 /* >>>>>>>>>>>------ Variable initialization ------<<<<<<<<<<< */
 
 var_init:
 			VAR var												{dbg("var_init: var a...; (local variable)")}
 			| VAR literal_string 								{dbg("var_init: var a")}
-			| var												{dbg("var_init: a...; (global variable)")}
-			
+			| assign_expression COMA var						{dbg("var_init: a...; (global variable)")}
+
 var:
 			var COMA literal_string								{dbg("var: ...a")}
-			| operation_assign 									{dbg("var_init: a = 0;")}
-			| var COMA operation_assign 						{dbg("var_init: a = 0, ...")}
+			| assign_expression 								{dbg("var_init: a = 0;")}
+			| var COMA assign_expression 						{dbg("var_init: a = 0, ...")}
 
-operation_assign:
-			literal_string OP_ASSIGN expression					{dbg("operation_assign: a = 0;")}
-			| literal_string OP_ASSIGN operation_assign			{dbg("operation_assign: a = ...")}
 
 /* <<<<<<<<<<<------ Variable initialization ------>>>>>>>>>>> */
 
 /* >>>>>>>>>>>------ Expressions ------<<<<<<<<<<< */
-
-empty_expression:
-			{dbg("empty_expression: ;")}
 
 expression: 
 			// expr in brackets
@@ -248,24 +262,42 @@ expression:
 
 			LBRACKET_ROUND expression RBRACKET_ROUND			{dbg("expression: (a+0)")}
 
-			//| operation_assign
-
+			| assign_expression									{dbg("expression: assign_expression")}
 			| binary_expression 								{dbg("expression: binary_expression")}
 			| ternary_expression 								{dbg("expression: ternary_expression")}
 			| unary_expression									{dbg("expression: unary_expression")}
-//			| logical_expression 								{dbg("expression: logical_expression")}
+			| new_expression 									{dbg("expression: new_expression")}
+			| delete_expression 								{dbg("expression: delete_expression")}
+
+			| obj_and_method 									{dbg("expression: obj_and_method")}
 
 			| literal_number 									{dbg("expression: literal_number")}
 			| constant_string 									{dbg("expression: constant_string")}
-			| literal_string 									{dbg("expression: literal_string")}
+			//| literal_string 									{dbg("expression: literal_string")}
 
 			| empty_expression 									{dbg("expression: empty_expression")}
 
 			| useful_words										{dbg("expression: useful_words")}
 
+assign_expression:
+			object OP_ASSIGN expression 						{dbg("assign_expression: this.a = 0")}
+
+new_expression:
+			NEW expression 										{dbg("new_expression: new a()")}
+
+delete_expression:
+			DELETE object;
+
+empty_expression:
+			{dbg("empty_expression: ;")}
+
 useful_words:
 			NUL 												{dbg("useful_words: null")}
-			//| CONTINUE 											{dbg("useful_words: continue")}
+			| TRUE 												{dbg("useful_words: true")}
+			| FALSE 											{dbg("useful_words: false")}
+			| UNDEFINED 										{dbg("useful_words: undefined")}
+			| NAN 												{dbg("useful_words: NaN")}
+			| INFINITY 											{dbg("useful_words: Infinity")}
 
 unary_expression:
 			/* prefix expression */
@@ -306,6 +338,23 @@ binary_expression:
 
 ternary_expression:
 			expression QMARK expression COLON expression {dbg("ternary_expression: (a > 0) ? 1 : 0")}
+
+/* >>>>>>>>>>>------ Objects ------<<<<<<<<<<< */
+
+obj_and_method:
+			object LBRACKET_ROUND parameters RBRACKET_ROUND {dbg("obj_and_method: f(expr)")}
+			| object
+
+parameters:
+			expression 											{dbg("parameters: 1")}
+			| parameters COMA expression 						{dbg("parameters: ... , 1")}
+
+object:
+			literal_string	 									{dbg("object: a")}
+			| object DOT literal_string							{dbg("object: ... .a")}
+			| THIS DOT literal_string 							{dbg("object: this.a")}
+
+/* <<<<<<<<<<<------ Objects ------>>>>>>>>>>> */
 
 /* <<<<<<<<<<<------ Expressions ------>>>>>>>>>>> */
 
