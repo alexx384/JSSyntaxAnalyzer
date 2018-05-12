@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="IHateWindows.cpp" />
     <ClCompile Include="KurMain.cpp" />
     <ClCompile Include="lexic.cpp" />
     <ClCompile Include="parse.cpp" />

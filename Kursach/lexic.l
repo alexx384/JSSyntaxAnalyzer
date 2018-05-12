@@ -21,8 +21,7 @@
 digit 			[0-9]
 hexdigit		[0-9a-fA-F]
 mantissa 		({digit}+(\.{digit}*)?)|(\.{digit}+)
-unch			[\n ]*
-letter [a-zA-Z]
+letter 			[a-zA-Z]
 
 
 %{
@@ -54,15 +53,18 @@ digit /* integer number */ {
 
 {mantissa}([eE][+-]?{digit}+)? /* Float number */ {
 UP
-DL(LITERAL_NUMBER);
+DL(DEC_LITERAL_NUMBER);
 return LITERAL_NUMBER;
 }
 
+(0x{hexdigit}+) /* Hexadecimal number */ {
+UP
+DL(HEX_LITERAL_NUMBER);
+return LITERAL_NUMBER;
+}
 
-
-
-"'"	 /* Const string */	{ UP DL(const_string1); BEGIN(const_string1); }
-"\"" /* Const string */	{ UP DL(const_string2); BEGIN(const_string2); }
+"'"	 /* Const string */	{ UP DL(CONST_STRING1); BEGIN(const_string1); }
+"\"" /* Const string */	{ UP DL(CONST_STRING2); BEGIN(const_string2); }
 
 <const_string1>
 {
