@@ -139,6 +139,9 @@ block:
 			expression END_OP									{dbgCoBlck("block: a + 0;")}
 			| block expression END_OP							{dbgCoBlck("block: ... a + 0;")}
 
+			| blck_function_expression 							{dbgCoBlck("block: blck_function_expression")}
+			| block blck_function_expression 					{dbgCoBlck("block: ... blck_function_expression")}			
+
 			| var_init END_OP									{dbgCoBlck("block: variable initialization;")}
 			| block var_init END_OP								{dbgCoBlck("block: ... ; variable initialization;")}
 
@@ -173,23 +176,47 @@ operators:
 
 			| break_operator 									{dbgCoOper("operators: break")}
 
+			| continue_operator 								{dbgCoOper("operators: continue")}
+
+continue_operator:
+			CONTINUE END_OP 									{dbg("continue_operator: continue ;")}
+			| CONTINUE literal_string END_OP 					{dbg("continue_operator: continue a ;")}
+
 break_operator:
-			BREAK END_OP
-			| BREAK literal_string END_OP 
+			BREAK END_OP 										{dbg("break_operator: break ;")}
+			| BREAK literal_string END_OP 						{dbg("break_operator: break a ;")}
+
+//I do not undestand what is that. Is the specific return expression?..
+//But Ok I Will implement that:
+//(line 5265) {
+//                rng : rng; scrollX : sx; scrollY : sy};
+
+strange_expression:
+			literal_string COLON init_value 												{dbg("strange_expression: a : init_value")}
+			| strange_expression END_OP literal_string COLON init_value 					{dbg("strange_expression: ... ; a : init_value")}
 
 return_operator:
-			RETURN expression END_OP
+			RETURN LBRACKET_CURLY strange_expression RBRACKET_CURLY END_OP 					{dbg("return_operator: return { strange_expression } ;")}
+			| RETURN expression END_OP 														{dbg("return_operator: return expression ;")}
+
 
 throw_operator:
-			THROW expression END_OP
+			THROW expression END_OP 							{dbg("throw_operator: throw expression ;")}
 
 try_operator:
 			TRY LBRACKET_CURLY block RBRACKET_CURLY catch_operator 										{dbg("try_operator: try { block } catch_operator")}
-			| TRY LBRACKET_CURLY block RBRACKET_CURLY FINALLY LBRACKET_CURLY block RBRACKET_CURLY		{dbg("try_operator: try { block } finally { block }")}
+			| TRY LBRACKET_CURLY RBRACKET_CURLY catch_operator 											{dbg("try_operator: try { } catch_operator")}
+			| TRY LBRACKET_CURLY block RBRACKET_CURLY finally_operator									{dbg("try_operator: try { block } finally ...")}
+
+finally_operator:
+			FINALLY LBRACKET_CURLY block RBRACKET_CURLY 												{dbg("finally_operator: finally { block }")}
+			| FINALLY LBRACKET_CURLY RBRACKET_CURLY														{dbg("finally_operator: finally { }")}
 
 catch_operator:
 			CATCH LBRACKET_ROUND literal_string RBRACKET_ROUND LBRACKET_CURLY block RBRACKET_CURLY 		{dbg("catch_operator: catch (a) { block }")}
+			| CATCH LBRACKET_ROUND literal_string RBRACKET_ROUND LBRACKET_CURLY RBRACKET_CURLY 			{dbg("catch_operator: catch (a) { }")}
 			| CATCH LBRACKET_CURLY block RBRACKET_CURLY													{dbg("catch_operator: catch { block }")}
+			| CATCH LBRACKET_CURLY RBRACKET_CURLY														{dbg("catch_operator: catch { }")}
 			| catch_operator FINALLY LBRACKET_CURLY block RBRACKET_CURLY 								{dbg("catch_operator: ... finally { block }")}
 
 do_operator:
@@ -200,17 +227,26 @@ while_operator:
 
 for_operator:
 			FOR LBRACKET_ROUND expression END_OP expression END_OP expression RBRACKET_ROUND single_block 	{dbg("for_operator: for(i=0; i < 4; i++) block")}
+			| FOR LBRACKET_ROUND var_init END_OP expression END_OP expression RBRACKET_ROUND single_block 	{dbg("for_operator: for(var i=0; i < 4; i++) block")}
+			| FOR LBRACKET_ROUND var_init IN object RBRACKET_ROUND single_block 							{dbg("for(var i in obj) block")}
 			| FOR LBRACKET_ROUND literal_string IN object RBRACKET_ROUND single_block 						{dbg("for(i in obj) block")}
 
 /* >>>>>>>>>>>------ Switch statement ------<<<<<<<<<<< */
 
 switch_operator:
-			SWITCH LBRACKET_ROUND expression RBRACKET_ROUND LBRACKET_CURLY case_expression RBRACKET_CURLY
+			SWITCH LBRACKET_ROUND expression RBRACKET_ROUND LBRACKET_CURLY case_expression default_operator RBRACKET_CURLY 		{dbg("switch_operator: (expression) { case_expression default_operator }")}
+			| SWITCH LBRACKET_ROUND expression RBRACKET_ROUND LBRACKET_CURLY default_operator RBRACKET_CURLY 					{dbg("switch_operator: (expression) { default_operator }")}
+
+default_operator:
+			DEFAULT COLON block 								{dbg("default_operator: default: block")}
+			| 													{dbg("default_operator: <nothing>")}
 
 case_expression:
 			CASE expression COLON block 						{dbg("case_expression: case 1: block")}
 			| case_expression CASE expression COLON block 		{dbg("case_expression: ... case 1: block")}
-			| DEFAULT COLON block 								{dbg("case_expression: default: block")}
+			| CASE expression COLON 							{dbg("case_expression: case 1:")}
+			| case_expression CASE expression COLON 			{dbg("case_expression: ... case 1:")}
+//			|
 
 /* <<<<<<<<<<<------ Switch statement ------>>>>>>>>>>> */
 
@@ -222,6 +258,10 @@ if_operator:
 
 single_block:
 			expression END_OP									{dbg("single_block: a + 0;")}
+
+			| function_expression 								{dbg("single_block: function_expression")}
+
+			| var_init END_OP									{dbg("single_block: variable initialization;")}
 
 			| LBRACKET_CURLY block RBRACKET_CURLY				{dbg("single_block: { block }")}
 
@@ -237,12 +277,12 @@ single_block:
 /* >>>>>>>>>>>------ Variable initialization ------<<<<<<<<<<< */
 
 var_init:
-			VAR var												{dbg("var_init: var a...; (local variable)")}
-			| VAR literal_string 								{dbg("var_init: var a")}
+			VAR var 											{dbg("var_init: var a...; (local variable)")}
 			| assign_expression COMA var						{dbg("var_init: a...; (global variable)")}
 
 var:
-			var COMA literal_string								{dbg("var: ...a")}
+			literal_string
+			| var COMA literal_string							{dbg("var: ...a")}
 			| assign_expression 								{dbg("var: a = 0;")}
 			| var COMA assign_expression 						{dbg("var: a = 0, ...")}
 
@@ -259,84 +299,16 @@ init_block:
 			|
 
 init_value:
-			object
-			| constant_string
-			| literal_number
-			| LBRACKET_CURLY init_block RBRACKET_CURLY
+			expression 											{dbg("init_value: expression")}
+			| function_expression								{dbg("init_value: function_expression")}
+			| LBRACKET_CURLY init_block RBRACKET_CURLY 			{dbg("init_value: { init_block }")}
 
 /* <<<<<<<<<<<------ Variable initialization ------>>>>>>>>>>> */
 
-/* >>>>>>>>>>>------ Expressions ------<<<<<<<<<<< */
-
-expression: 
-			// expr in brackets
-			//| LBRACKET_ROUND expression RBRACKET_ROUND DOT refinements_and_calls 	{dbg("(expr).f(). ...")	}
-			
-			////------ expression operands end
-
-			LBRACKET_ROUND expression RBRACKET_ROUND			{dbgCoExpr("expression: (a+0)")}
-
-			| assign_expression									{dbgCoExpr("expression: assign_expression")}
-			| shortened_expression 								{dbgCoExpr("expression: shortened_expression")}
-			| binary_expression 								{dbgCoExpr("expression: binary_expression")}
-			| ternary_expression 								{dbgCoExpr("expression: ternary_expression")}
-			| unary_expression									{dbgCoExpr("expression: unary_expression")}
-			| new_expression 									{dbgCoExpr("expression: new_expression")}
-			| delete_expression 								{dbgCoExpr("expression: delete_expression")}
-
-			| function_expression 								{dbgCoExpr("expression: function_expression")}
-
-			| obj_and_method 									{dbgCoExpr("expression: obj_and_method")}
-
-			| literal_number 									{dbgCoExpr("expression: literal_number")}
-			| constant_string 									{dbgCoExpr("expression: constant_string")}
-			//| literal_string 									{dbgCoExpr("expression: literal_string")}
-
-			| empty_expression 									{dbgCoExpr("expression: empty_expression")}
-
-			| useful_words										{dbgCoExpr("expression: useful_words")}
-
-			| typeof_operator 									{dbgCoExpr("expression: typeof_operator")}
-
-typeof_operator:
-			TYPEOF expression 									{dbg("typeof_operator: typeof expression")}
-
-shortened_expression:
-			object OP_ASSIGN_ADD 		expression 				{dbg("shortened_expression: a += a")}
-			| object OP_ASSIGN_SUB		expression 				{dbg("shortened_expression: a -= a")}
-			| object OP_ASSIGN_MUL		expression 				{dbg("shortened_expression: a *= a")}
-			| object OP_ASSIGN_POW		expression 				{dbg("shortened_expression: a **= a")}
-			| object OP_ASSIGN_DIV		expression 				{dbg("shortened_expression: a /= a")}
-			| object OP_ASSIGN_MOD		expression 				{dbg("shortened_expression: a %= a")}
-			| object OP_ASSIGN_LSHIFT	expression 				{dbg("shortened_expression: a >>= a, a >>>= a")}
-			| object OP_ASSIGN_RSHIFT	expression 				{dbg("shortened_expression: a <<= a, a <<<= a")}
-			| object OP_ASSIGN_AND		expression 				{dbg("shortened_expression: a &= a")}
-			| object OP_ASSIGN_XOR		expression 				{dbg("shortened_expression: a ^= a")}
-			| object OP_ASSIGN_OR		expression 				{dbg("shortened_expression: a |= a")}
-
-
-assign_expression:
-			object OP_ASSIGN expression 						{dbg("assign_expression: this.a = 0")}
-			| object OP_ASSIGN LBRACKET_CURLY init_block RBRACKET_CURLY		{dbg("var_init: a = { init_block }")}
-
-new_expression:
-			NEW expression 										{dbg("new_expression: new a()")}
-
-delete_expression:
-			DELETE object;
-
-empty_expression:
-			{dbg("empty_expression: ;")}
-
-useful_words:
-			NUL 												{dbg("useful_words: null")}
-			| TRUE 												{dbg("useful_words: true")}
-			| FALSE 											{dbg("useful_words: false")}
-			| UNDEFINED 										{dbg("useful_words: undefined")}
-			| NAN 												{dbg("useful_words: NaN")}
-			| INFINITY 											{dbg("useful_words: Infinity")}
-
 /* >>>>>>>>>>>------ Function expression ------<<<<<<<<<<< */
+
+blck_function_expression:
+			FUNCTION literal_string LBRACKET_ROUND func_parameters RBRACKET_ROUND LBRACKET_CURLY func_body RBRACKET_CURLY 	{dbg("function: function literal_string (parameters) { func_body }")}
 
 function_expression:
 			FUNCTION func_name LBRACKET_ROUND func_parameters RBRACKET_ROUND LBRACKET_CURLY func_body RBRACKET_CURLY 	{dbg("function: function func_name (parameters) { func_body }")}
@@ -356,20 +328,103 @@ func_parameters:
 
 /* <<<<<<<<<<<------ Function expression ------>>>>>>>>>>> */
 
+/* >>>>>>>>>>>------ Expressions ------<<<<<<<<<<< */
+
+expression: 
+			// expr in brackets
+			//| LBRACKET_ROUND expression RBRACKET_ROUND DOT refinements_and_calls 	{dbg("(expr).f(). ...")	}
+			
+			////------ expression operands end
+
+			LBRACKET_ROUND expression RBRACKET_ROUND			{dbgCoExpr("expression: (a+0)")}
+
+			| assign_expression									{dbgCoExpr("expression: assign_expression")}
+			| shortened_expression 								{dbgCoExpr("expression: shortened_expression")}
+			| binary_expression 								{dbgCoExpr("expression: binary_expression")}
+			| ternary_expression 								{dbgCoExpr("expression: ternary_expression")}
+			| unary_expression									{dbgCoExpr("expression: unary_expression")}
+			| new_expression 									{dbgCoExpr("expression: new_expression")}
+			| delete_expression 								{dbgCoExpr("expression: delete_expression")}
+
+			| obj_and_method 									{dbgCoExpr("expression: obj_and_method")}
+
+			| literal_number 									{dbgCoExpr("expression: literal_number")}
+			| constant_string 									{dbgCoExpr("expression: constant_string")}
+			//| literal_string 									{dbgCoExpr("expression: literal_string")}
+
+			| empty_expression 									{dbgCoExpr("expression: empty_expression")}
+
+			| useful_words										{dbgCoExpr("expression: useful_words")}
+
+			| typeof_operator 									{dbgCoExpr("expression: typeof_operator")}
+
+			| THIS 												{dbgCoExpr("expression: this")}
+
+//			| LBRACKET_CURLY block RBRACKET_CURLY 				{dbgCoExpr("expression: ")}
+//			| LBRACKET_CURLY RBRACKET_CURLY
+
+typeof_operator:
+			TYPEOF expression 									{dbg("typeof_operator: typeof expression")}
+//			TYPEOF LBRACKET_ROUND expression RBRACKET_ROUND 	{dbg("typeof_operator: typeof ( expression )")}
+
+shortened_expression:
+			object OP_ASSIGN_ADD 		expression 				{dbg("shortened_expression: a += a")}
+			| object OP_ASSIGN_SUB		expression 				{dbg("shortened_expression: a -= a")}
+			| object OP_ASSIGN_MUL		expression 				{dbg("shortened_expression: a *= a")}
+			| object OP_ASSIGN_POW		expression 				{dbg("shortened_expression: a **= a")}
+			| object OP_ASSIGN_DIV		expression 				{dbg("shortened_expression: a /= a")}
+			| object OP_ASSIGN_MOD		expression 				{dbg("shortened_expression: a %= a")}
+			| object OP_ASSIGN_LSHIFT	expression 				{dbg("shortened_expression: a >>= a, a >>>= a")}
+			| object OP_ASSIGN_RSHIFT	expression 				{dbg("shortened_expression: a <<= a, a <<<= a")}
+			| object OP_ASSIGN_AND		expression 				{dbg("shortened_expression: a &= a")}
+			| object OP_ASSIGN_XOR		expression 				{dbg("shortened_expression: a ^= a")}
+			| object OP_ASSIGN_OR		expression 				{dbg("shortened_expression: a |= a")}
+
+expression_enum:
+			expression 											{dbg("expression_enum: expression")}
+			| expression_enum COMA expression 					{dbg("expression_enum: ... , expression")}
+			
+			| function_expression 								{dbg("expression_enum: function_expression")}
+			| expression_enum COMA function_expression 			{dbg("expression_enum: ... , function_expression")}
+
+assign_expression:
+			object OP_ASSIGN expression 						{dbg("assign_expression: this.a = 0")}
+			| object OP_ASSIGN function_expression 				{dbg("assign_expression: this.a = function_expression")}
+			| object OP_ASSIGN LBRACKET_CURLY init_block RBRACKET_CURLY		{dbg("assign_expression: a = { init_block }")}
+			| object OP_ASSIGN LBRACKET_SQUARE expression_enum RBRACKET_SQUARE 	{dbg("assign_expression: a = [ expression ]")}
+
+new_expression:
+			NEW expression 										{dbg("new_expression: new a()")}
+
+delete_expression:
+			DELETE object;
+
+empty_expression:
+			{dbg("empty_expression: ;")}
+
+useful_words:
+			NUL 												{dbg("useful_words: null")}
+			| TRUE 												{dbg("useful_words: true")}
+			| FALSE 											{dbg("useful_words: false")}
+			| UNDEFINED 										{dbg("useful_words: undefined")}
+			| NAN 												{dbg("useful_words: NaN")}
+			| INFINITY 											{dbg("useful_words: Infinity")}
+
 unary_expression:
 			/* prefix expression */
-			OPA_INC literal_string				{dbg("unary_expression: ++ a")}
-			| OPA_INC LBRACKET_ROUND literal_string RBRACKET_ROUND 		{dbg("unary_expression: ++ (a)")}
-			| OPA_DEC literal_string	 		{dbg("unary_expression: -- a")}
-			| OPA_DEC LBRACKET_ROUND literal_string RBRACKET_ROUND 		{dbg("unary_expression: -- (a)")}
+			OPA_INC object				{dbg("unary_expression: ++ a")}
+			| OPA_INC LBRACKET_ROUND object RBRACKET_ROUND 		{dbg("unary_expression: ++ (a)")}
+			| OPA_DEC object	 		{dbg("unary_expression: -- a")}
+			| OPA_DEC LBRACKET_ROUND object RBRACKET_ROUND 		{dbg("unary_expression: -- (a)")}
 
 			/* postfix expression */
 			/* надо подумать на счёт этого. Возможно придётся реализовать 
 			   второй тип expression - bracket expression */
-			| literal_string OPA_INC 			{dbg("unary_expression: a ++")}
-			//| LBRACKET_ROUND literal_string RBRACKET_ROUND OPA_INC 	{dbg("unary_expression: (a) ++")}
-			| literal_string OPA_DEC 			{dbg("unary_expression: a --")}
+			| object OPA_INC 			{dbg("unary_expression: a ++")}
+			//| LBRACKET_ROUND object RBRACKET_ROUND OPA_INC 		{dbg("unary_expression: (a) ++")}
+			| object OPA_DEC 			{dbg("unary_expression: a --")}
 			//| LBRACKET_ROUND literal_string RBRACKET_ROUND OPA_DEC 	{dbg("unary_expression: (a) --")}
+			| OPL_NOT expression 				{dbg("unary_expression: !a")}
 
 binary_expression:
 			expression OPA_MUL 		expression 	{dbg("binary_expression: a * a")}
@@ -404,7 +459,12 @@ obj_and_method:
 
 parameters:
 			expression 											{dbg("parameters: 1")}
+			| function_expression 								{dbg("parameters: function_expression")}
+			| LBRACKET_CURLY init_block RBRACKET_CURLY 			{dbg("parameters: { init_block }")}
+			
 			| parameters COMA expression 						{dbg("parameters: ... , 1")}
+			| parameters COMA function_expression 				{dbg("parameters: ... , function_expression")}
+			| parameters COMA LBRACKET_CURLY init_block RBRACKET_CURLY 	{dbg("parameters: ... , { init_block }")}
 
 object:
 			object LBRACKET_ROUND parameters RBRACKET_ROUND 	{dbg("object: ... ( parameters )")}

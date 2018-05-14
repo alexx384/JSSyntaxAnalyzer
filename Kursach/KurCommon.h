@@ -8,7 +8,7 @@
 class YYSTATPOS
 {
 public:
-	YYSTATPOS() : col(0), line(0) {}
+	YYSTATPOS() : col(1), line(1) {}
 	~YYSTATPOS() {};
 
 	void incLinePos(size_t val) {
@@ -16,7 +16,7 @@ public:
 	}
 	void nextLine() {
 		++line;
-		col = 0;
+		col = 1;
 	}
 
 	size_t getCol() {
