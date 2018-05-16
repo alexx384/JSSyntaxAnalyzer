@@ -1,12 +1,20 @@
 %token 
 
 /* ----- JS reserved words ----- */
-ABSTRACT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEBUGGER DEFAULT
-DELETE DO DOUBLE ELSE ENUM EXPORT EXTENDS FALSE FINAL FINALLY FLOAT FOR FUNCTION
-GOTO IF IMPLEMENTS IMPORT IN INSTANCEOF INT INTERFACE LONG NATIVE NEW NUL
-PACKAGE PRIVATE PROTECTED PUBLIC RETURN SHORT STATIC SUPER SWITCH SYNCHRONIZED
-THIS THROW THROWS TRANSIENT TRUE TRY TYPEOF VAR VOID VOLATILE WHILE WITH
-UNDEFINED NAN INFINITY
+BREAK CASE CATCH CLASS CONST CONTINUE DEBUGGER DEFAULT
+DELETE DO ELSE ENUM EXPORT EXTENDS FALSE FINAL FINALLY FOR FUNCTION
+IF IMPLEMENTS IMPORT IN INSTANCEOF NEW NUL
+RETURN SUPER SWITCH
+THIS THROW TRUE TRY TYPEOF VAR VOID WHILE WITH
+UNDEFINED NAN INFINITY COMPONENTS_UTILS_IMPORT
+GET SET
+
+/*
+Deprecated:
+LONG SHORT INT FLOAT DOUBLE CHAR BYTE GOTO NATIVE PACKAGE PRIVATE PROTECTED
+PUBLIC STATIC SYNCHRONIZED THROWS TRANSIENT VOLATILE ABSTRACT
+BOOLEAN INTERFACE
+*/
 /* ----- JS reserved words ----- */
 
 DOT 	// access operator '.'
@@ -124,7 +132,7 @@ OPA_DEC // '--'
 %left IN INSTANCEOF OPL_L OPL_G	OPL_GE OPL_LE
 %left OPB_LSHIFT OPB_RSHIFT	
 %left OPA_ADD OPA_SUB
-%left OPA_MUL OPA_DIV OPA_MOD  
+%left OPA_MUL OPA_DIV OPA_MOD 
 %right OPA_POW
 %right OPL_NOT OPB_NOT TYPEOF VOID DELETE OPA_INC OPA_DEC /* and unary +, - */
 %left NEW LBRACKET_SQUARE RBRACKET_SQUARE DOT
@@ -136,14 +144,8 @@ OPA_DEC // '--'
 %%
 
 block:
-			expression END_OP									{dbgCoBlck("block: a + 0;")}
-			| block expression END_OP							{dbgCoBlck("block: ... a + 0;")}
-
-			| blck_function_expression 							{dbgCoBlck("block: blck_function_expression")}
+			blck_function_expression 							{dbgCoBlck("block: blck_function_expression")}
 			| block blck_function_expression 					{dbgCoBlck("block: ... blck_function_expression")}			
-
-			| var_init END_OP									{dbgCoBlck("block: variable initialization;")}
-			| block var_init END_OP								{dbgCoBlck("block: ... ; variable initialization;")}
 
 			| LBRACKET_CURLY block RBRACKET_CURLY				{dbgCoBlck("block: { block }")}
 			| block LBRACKET_CURLY block RBRACKET_CURLY			{dbgCoBlck("block: ... { block }")}
@@ -151,11 +153,38 @@ block:
 			| LBRACKET_CURLY RBRACKET_CURLY						{dbgCoBlck("block: { }")}
 			| block LBRACKET_CURLY RBRACKET_CURLY				{dbgCoBlck("block: { }")}
 
-			| operators 										{dbgCoBlck("block: operators")}
-			| block operators									{dbgCoBlck("block: ... operators")}
+			| universal_single_block 							{dbgCoBlck("block: universal_single_block")}
+			| block universal_single_block 						{dbgCoBlck("block: ... universal_single_block")}
 
-			| block literal_string COLON 						{dbgCoBlck("block: label")} 
+			| label_expression
+			| block label_expression
 
+single_block:
+			function_expression 								{dbg("single_block: function_expression")}
+
+			| LBRACKET_CURLY block RBRACKET_CURLY				{dbg("single_block: { block }")}
+			| LBRACKET_CURLY RBRACKET_CURLY						{dbg("single_block: { }")}
+
+			| universal_single_block 							{dbg("single_block: universal_single_block")}
+
+universal_single_block:
+			expression END_OP									{dbg("universal_single_block: a + 0;")}
+			| reserved_expressions 								{dbg("universal_single_block: reserved_expressions")}
+			| var_init END_OP									{dbg("universal_single_block: variable initialization;")}
+			
+			| operators 										{dbg("universal_single_block: operators")}
+
+/* ++@++ Label statement ++@++ */
+label:
+			literal_string COLON 								{dbg("label: lbl1 :")}
+			| label literal_string COLON						{dbg("label: ... lbl1 :")}
+
+label_expression:
+			label   blck_function_expression 			{dbg("label_expression: label : blck_function_expression")}
+			| label LBRACKET_CURLY block RBRACKET_CURLY {dbg("label_expression: label : { block }")}
+			| label LBRACKET_CURLY RBRACKET_CURLY 		{dbg("label_expression: label : { }")}
+			| label universal_single_block 				{dbg("label_expression: label : universal_single_block")}
+/* --!-- Switch statement --!-- */
 
 operators:
 			if_operator 										{dbgCoOper("operators: if ()")}
@@ -178,6 +207,19 @@ operators:
 
 			| continue_operator 								{dbgCoOper("operators: continue")}
 
+gen_list:
+			LBRACKET_SQUARE parameters RBRACKET_SQUARE
+
+/* /// Javascript reserved expressions \\\ */
+
+reserved_expressions:
+			components_utils_import_expression
+
+components_utils_import_expression:
+			COMPONENTS_UTILS_IMPORT LBRACKET_ROUND parameters RBRACKET_ROUND END_OP
+
+/* \\\ Javascript reserved expressions /// */
+
 continue_operator:
 			CONTINUE END_OP 									{dbg("continue_operator: continue ;")}
 			| CONTINUE literal_string END_OP 					{dbg("continue_operator: continue a ;")}
@@ -186,6 +228,7 @@ break_operator:
 			BREAK END_OP 										{dbg("break_operator: break ;")}
 			| BREAK literal_string END_OP 						{dbg("break_operator: break a ;")}
 
+/* ++@++ return statement ++@++ */
 //I do not undestand what is that. Is the specific return expression?..
 //But Ok I Will implement that:
 //(line 5265) {
@@ -194,14 +237,17 @@ break_operator:
 strange_expression:
 			literal_string COLON init_value 												{dbg("strange_expression: a : init_value")}
 			| strange_expression END_OP literal_string COLON init_value 					{dbg("strange_expression: ... ; a : init_value")}
+			|
 
 return_operator:
 			RETURN LBRACKET_CURLY strange_expression RBRACKET_CURLY END_OP 					{dbg("return_operator: return { strange_expression } ;")}
-			| RETURN expression END_OP 														{dbg("return_operator: return expression ;")}
-
+			| RETURN function_expression 													{dbg("single_block: function_expression")}
+			| RETURN universal_single_block 												{dbg("single_block: universal_single_block")}
+			//| gen_list
+/* --!-- return statement --!-- */
 
 throw_operator:
-			THROW expression END_OP 							{dbg("throw_operator: throw expression ;")}
+			THROW single_block 																{dbg("throw_operator: throw single_block")}
 
 try_operator:
 			TRY LBRACKET_CURLY block RBRACKET_CURLY catch_operator 										{dbg("try_operator: try { block } catch_operator")}
@@ -226,12 +272,15 @@ while_operator:
 			WHILE LBRACKET_ROUND expression RBRACKET_ROUND single_block 	{dbg("while_operator: while (expression) block")}
 
 for_operator:
+
 			FOR LBRACKET_ROUND expression END_OP expression END_OP expression RBRACKET_ROUND single_block 	{dbg("for_operator: for(i=0; i < 4; i++) block")}
 			| FOR LBRACKET_ROUND var_init END_OP expression END_OP expression RBRACKET_ROUND single_block 	{dbg("for_operator: for(var i=0; i < 4; i++) block")}
-			| FOR LBRACKET_ROUND var_init IN object RBRACKET_ROUND single_block 							{dbg("for(var i in obj) block")}
-			| FOR LBRACKET_ROUND literal_string IN object RBRACKET_ROUND single_block 						{dbg("for(i in obj) block")}
+			| FOR LBRACKET_ROUND expression RBRACKET_ROUND single_block
+			| FOR LBRACKET_ROUND VAR expression RBRACKET_ROUND single_block
+			//| FOR LBRACKET_ROUND var_init IN object RBRACKET_ROUND single_block 							{dbg("for(var i in obj) block")}
+			//| FOR LBRACKET_ROUND literal_string IN object RBRACKET_ROUND single_block 						{dbg("for(i in obj) block")}
 
-/* >>>>>>>>>>>------ Switch statement ------<<<<<<<<<<< */
+/* ++@++ Switch statement ++@++ */
 
 switch_operator:
 			SWITCH LBRACKET_ROUND expression RBRACKET_ROUND LBRACKET_CURLY case_expression default_operator RBRACKET_CURLY 		{dbg("switch_operator: (expression) { case_expression default_operator }")}
@@ -247,34 +296,18 @@ case_expression:
 			| CASE expression COLON 							{dbg("case_expression: case 1:")}
 			| case_expression CASE expression COLON 			{dbg("case_expression: ... case 1:")}
 //			|
+/* --!-- Switch statement --!-- */
 
-/* <<<<<<<<<<<------ Switch statement ------>>>>>>>>>>> */
-
-/* >>>>>>>>>>>------ If statement ------<<<<<<<<<<< */
+/* ++@++ If statement ++@++ */
 
 if_operator:
 			IF LBRACKET_ROUND expression RBRACKET_ROUND single_block %prec NO_ELSE	 	 {dbg("if_operator: if (expression) block")}
 			| IF LBRACKET_ROUND expression RBRACKET_ROUND single_block ELSE single_block {dbg("if_operator: if (expression) single_stat_blck else single_stat_blck")}
 
-single_block:
-			expression END_OP									{dbg("single_block: a + 0;")}
-
-			| function_expression 								{dbg("single_block: function_expression")}
-
-			| var_init END_OP									{dbg("single_block: variable initialization;")}
-
-			| LBRACKET_CURLY block RBRACKET_CURLY				{dbg("single_block: { block }")}
-
-			| LBRACKET_CURLY RBRACKET_CURLY						{dbg("single_block: { }")}
-
-			| literal_string COLON single_block 				{dbg("single_block: label")}
-
-			| operators 										{dbg("single_block: operators")}
-
-/* <<<<<<<<<<<------ If statement ------>>>>>>>>>>> */
+/* --!-- If statement --!-- */
 
 
-/* >>>>>>>>>>>------ Variable initialization ------<<<<<<<<<<< */
+/* ++@++ Variable initialization ++@++ */
 
 var_init:
 			VAR var 											{dbg("var_init: var a...; (local variable)")}
@@ -291,27 +324,45 @@ init_block:
 			| constant_string COLON init_value 												{dbg("init_block: 'vara' : init_value")}
 			| LBRACKET_SQUARE expression RBRACKET_SQUARE COLON init_value					{dbg("init_block: ['vara' + a] : init_value")}
 			| DOT DOT DOT object 															{dbg("init_block: ... obj(clone object)")}
+			| CLASS COLON init_value
+			| GET object LBRACKET_CURLY block RBRACKET_CURLY
+			| SET object LBRACKET_CURLY block RBRACKET_CURLY
 
 			| init_block COMA literal_string COLON init_value 								{dbg("init_block: ... , a : init_value")}
 			| init_block COMA constant_string COLON init_value 								{dbg("init_block: ... , 'vara' : init_value")}
 			| init_block COMA LBRACKET_SQUARE expression RBRACKET_SQUARE COLON init_value 	{dbg("init_block: ... , ['vara' + a] : init_value")}
 			| init_block COMA DOT DOT DOT object 											{dbg("init_block: ... , ...obj(clone object)")}
+			| init_block COMA CLASS COLON init_value
+			| init_block COMA GET object LBRACKET_CURLY block RBRACKET_CURLY
+			| init_block COMA SET object LBRACKET_CURLY block RBRACKET_CURLY
 			|
+
+//strange_square_parameters:
+//			LBRACKET_SQUARE RBRACKET_SQUARE
+//			//| object
+//			| strange_square_parameters COMA LBRACKET_SQUARE RBRACKET_SQUARE
+//			//| strange_square_parameters COMA object
 
 init_value:
 			expression 											{dbg("init_value: expression")}
 			| function_expression								{dbg("init_value: function_expression")}
 			| LBRACKET_CURLY init_block RBRACKET_CURLY 			{dbg("init_value: { init_block }")}
+			//| gen_list
+			//| LBRACKET_SQUARE strange_square_parameters RBRACKET_SQUARE 	{dbg("init_value: [[], []]")}
 
-/* <<<<<<<<<<<------ Variable initialization ------>>>>>>>>>>> */
+/* --!-- Variable initialization --!-- */
 
-/* >>>>>>>>>>>------ Function expression ------<<<<<<<<<<< */
+/* ++@++ Function expression ++@++ */
 
 blck_function_expression:
 			FUNCTION literal_string LBRACKET_ROUND func_parameters RBRACKET_ROUND LBRACKET_CURLY func_body RBRACKET_CURLY 	{dbg("function: function literal_string (parameters) { func_body }")}
 
+iif_expression:
+			LBRACKET_ROUND FUNCTION func_name LBRACKET_ROUND func_parameters RBRACKET_ROUND LBRACKET_CURLY func_body RBRACKET_CURLY LBRACKET_ROUND RBRACKET_ROUND RBRACKET_ROUND
+
 function_expression:
-			FUNCTION func_name LBRACKET_ROUND func_parameters RBRACKET_ROUND LBRACKET_CURLY func_body RBRACKET_CURLY 	{dbg("function: function func_name (parameters) { func_body }")}
+			FUNCTION func_name LBRACKET_ROUND func_parameters RBRACKET_ROUND LBRACKET_CURLY func_body RBRACKET_CURLY	{dbg("function: function func_name (parameters) { func_body }")}
+			| iif_expression	{dbg("function: (function func_name (parameters) { func_body }())")}
 
 func_body:
 			block 												{dbg("func_body: block")}
@@ -326,9 +377,9 @@ func_parameters:
 			| func_parameters COMA literal_string 				{dbg("func_parameters: ... , a")}				
 			| 													{dbg("func_parameters: <nothing>")}		
 
-/* <<<<<<<<<<<------ Function expression ------>>>>>>>>>>> */
+/* --!-- Function expression --!-- */
 
-/* >>>>>>>>>>>------ Expressions ------<<<<<<<<<<< */
+/* ++@++ Expressions ++@++ */
 
 expression: 
 			// expr in brackets
@@ -336,9 +387,9 @@ expression:
 			
 			////------ expression operands end
 
-			LBRACKET_ROUND expression RBRACKET_ROUND			{dbgCoExpr("expression: (a+0)")}
+			//round_bracket_expression
 
-			| assign_expression									{dbgCoExpr("expression: assign_expression")}
+			assign_expression									{dbgCoExpr("expression: assign_expression")}
 			| shortened_expression 								{dbgCoExpr("expression: shortened_expression")}
 			| binary_expression 								{dbgCoExpr("expression: binary_expression")}
 			| ternary_expression 								{dbgCoExpr("expression: ternary_expression")}
@@ -349,8 +400,7 @@ expression:
 			| obj_and_method 									{dbgCoExpr("expression: obj_and_method")}
 
 			| literal_number 									{dbgCoExpr("expression: literal_number")}
-			| constant_string 									{dbgCoExpr("expression: constant_string")}
-			//| literal_string 									{dbgCoExpr("expression: literal_string")}
+			//| constant_string 									{dbgCoExpr("expression: constant_string")}
 
 			| empty_expression 									{dbgCoExpr("expression: empty_expression")}
 
@@ -360,12 +410,31 @@ expression:
 
 			| THIS 												{dbgCoExpr("expression: this")}
 
-//			| LBRACKET_CURLY block RBRACKET_CURLY 				{dbgCoExpr("expression: ")}
-//			| LBRACKET_CURLY RBRACKET_CURLY
+			| object INSTANCEOF object 		 					{dbgCoExpr("expression: object instanceof constructor")}
+
+			| in_expression 									{dbgCoExpr("expression: property in object")}
+
+			| round_bracket_expression
+
+			| square_bracket_expression
+
+square_bracket_enum:
+			expression
+			| square_bracket_enum COMA expression
+
+square_bracket_expression:
+			LBRACKET_SQUARE square_bracket_enum RBRACKET_SQUARE
+
+round_bracket_expression:
+			LBRACKET_ROUND expression RBRACKET_ROUND			{dbgCoExpr("expression: (a+0)")}
+			| LBRACKET_ROUND function_expression RBRACKET_ROUND			{dbgCoExpr("expression: (a+0)")}
+
+in_expression:
+			expression IN expression							{dbg("in_expression: 'propA' in object")}
+			//| expression IN gen_list							{dbg("in_expression: 'propA' in object")}
 
 typeof_operator:
 			TYPEOF expression 									{dbg("typeof_operator: typeof expression")}
-//			TYPEOF LBRACKET_ROUND expression RBRACKET_ROUND 	{dbg("typeof_operator: typeof ( expression )")}
 
 shortened_expression:
 			object OP_ASSIGN_ADD 		expression 				{dbg("shortened_expression: a += a")}
@@ -380,18 +449,21 @@ shortened_expression:
 			| object OP_ASSIGN_XOR		expression 				{dbg("shortened_expression: a ^= a")}
 			| object OP_ASSIGN_OR		expression 				{dbg("shortened_expression: a |= a")}
 
-expression_enum:
-			expression 											{dbg("expression_enum: expression")}
-			| expression_enum COMA expression 					{dbg("expression_enum: ... , expression")}
-			
-			| function_expression 								{dbg("expression_enum: function_expression")}
-			| expression_enum COMA function_expression 			{dbg("expression_enum: ... , function_expression")}
+//expression_enum:
+//			expression 											{dbg("expression_enum: expression")}
+//			| expression_enum COMA expression 					{dbg("expression_enum: ... , expression")}
+//			
+//			| function_expression 								{dbg("expression_enum: function_expression")}
+//			| expression_enum COMA function_expression 			{dbg("expression_enum: ... , function_expression")}
+
+			//| LBRACKET_SQUARE RBRACKET_SQUARE
+			//| expression_enum COMA LBRACKET_SQUARE RBRACKET_SQUARE
 
 assign_expression:
 			object OP_ASSIGN expression 						{dbg("assign_expression: this.a = 0")}
 			| object OP_ASSIGN function_expression 				{dbg("assign_expression: this.a = function_expression")}
 			| object OP_ASSIGN LBRACKET_CURLY init_block RBRACKET_CURLY		{dbg("assign_expression: a = { init_block }")}
-			| object OP_ASSIGN LBRACKET_SQUARE expression_enum RBRACKET_SQUARE 	{dbg("assign_expression: a = [ expression ]")}
+//			| object OP_ASSIGN LBRACKET_SQUARE expression_enum RBRACKET_SQUARE 	{dbg("assign_expression: a = [ expression ]")}
 
 new_expression:
 			NEW expression 										{dbg("new_expression: new a()")}
@@ -428,7 +500,7 @@ unary_expression:
 
 binary_expression:
 			expression OPA_MUL 		expression 	{dbg("binary_expression: a * a")}
-			| expression OPA_DIV    expression	{dbg("binary_expression: a / a")}
+			| expression OPA_DIV    expression	{dbg("binary_expression: a / a")}	
 			| expression OPA_MOD    expression	{dbg("binary_expression: a % a")}
 			| expression OPA_SUB 	expression 	{dbg("binary_expression: a - a")}
 			| expression OPA_ADD	expression 	{dbg("binary_expression: a + a")}
@@ -451,7 +523,7 @@ binary_expression:
 ternary_expression:
 			expression QMARK expression COLON expression {dbg("ternary_expression: (a > 0) ? 1 : 0")}
 
-/* >>>>>>>>>>>------ Objects ------<<<<<<<<<<< */
+/* ++@++ Objects ++@++ */
 
 obj_and_method:
 			//object LBRACKET_ROUND parameters RBRACKET_ROUND {dbg("obj_and_method: f(expr)")}
@@ -468,14 +540,18 @@ parameters:
 
 object:
 			object LBRACKET_ROUND parameters RBRACKET_ROUND 	{dbg("object: ... ( parameters )")}
-			| object LBRACKET_SQUARE parameters RBRACKET_SQUARE {dbg("object: ... [ parameters ]")}
+			| LBRACKET_ROUND parameters RBRACKET_ROUND
+			| object gen_list 								    {dbg("object: ... [ parameters ]")}
 			| literal_string	 								{dbg("object: a")}
 			| object DOT literal_string							{dbg("object: ... .a")}
 			| THIS DOT literal_string 							{dbg("object: this.a")}
+			| THIS LBRACKET_SQUARE object RBRACKET_SQUARE
+			| constant_string
+			//| round_bracket_expression
 
-/* <<<<<<<<<<<------ Objects ------>>>>>>>>>>> */
+/* --!-- Objects --!-- */
 
-/* <<<<<<<<<<<------ Expressions ------>>>>>>>>>>> */
+/* --!-- Expressions --!-- */
 
 			
 /////////////////--------------- literals

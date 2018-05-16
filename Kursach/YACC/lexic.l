@@ -16,7 +16,7 @@
 %x long_comment
 %x const_string1
 %x const_string2
-
+%x regular_expression
 
 digit 			[0-9]
 hexdigit		[0-9a-fA-F]
@@ -36,7 +36,7 @@ letter 			[a-zA-Z]
 	// update position after new line
 	#define UPNL 	g_yypos.nextLine();
 	
-	#define DEBUGLEX
+	//#define DEBUGLEX
 
 	#ifdef DEBUGLEX
 		#define DL(x) std::cout << #x << std::endl;
@@ -69,6 +69,7 @@ return LITERAL_NUMBER;
 <const_string1>
 {
 	"'"			{ UP BEGIN(0); return CSTRING; 							}
+	"\\\\"		{ UP /* escape character*/								}
 	"\\'"		{ UP /* escape character*/								}
 	\n			{ UPNL; yyerror("Next line but no end ' symbol found\n"); 	}
 	<<EOF>>		{ yyerror("EOF but no end ' symbol found\n"); 				}
@@ -78,6 +79,7 @@ return LITERAL_NUMBER;
 <const_string2>
 {
 	"\""		{ UP BEGIN(0); return CSTRING;							}
+	"\\\\"		{ UP /* escape character*/								}
 	"\\\""		{ UP /* escape character*/								}
 	\n			{ UPNL; yyerror("Next line but no end \" symbol found\n");	}
 	<<EOF>>		{ yyerror("EOF but no end \" symbol found\n");				}
@@ -102,13 +104,10 @@ UPNL; DL(single line comment);
 }
 
 
-"abstract"	    /* JZ reserved word */ 	{ UP DL(ABSTRACT); return ABSTRACT; 	}
-"boolean"       /* JZ reserved word */	{ UP DL(BOOLEAN); return BOOLEAN; 		}
+"Components.utils.import" /* JZ reserved expression */ {UP DL(COMPONENTS_UTILS_IMPORT); return COMPONENTS_UTILS_IMPORT;}
 "break"         /* JZ reserved word */  { UP DL(BREAK); return BREAK; 		}
-"byte"          /* JZ reserved word */  { UP DL(BYTE); return BYTE; 		}
 "case"          /* JZ reserved word */  { UP DL(CASE); return CASE; 		}
 "catch"         /* JZ reserved word */  { UP DL(CATCH); return CATCH; 		}
-"char"          /* JZ reserved word */  { UP DL(CHAR); return CHAR; 		}
 "class"         /* JZ reserved word */  { UP DL(CLASS); return CLASS; 		}
 "const"         /* JZ reserved word */  { UP DL(CONST); return CONST; 		}
 "continue"      /* JZ reserved word */  { UP DL(CONTINUE); return CONTINUE; 	}
@@ -116,7 +115,6 @@ UPNL; DL(single line comment);
 "default"       /* JZ reserved word */  { UP DL(DEFAULT); return DEFAULT; 		}
 "delete"        /* JZ reserved word */  { UP DL(DELETE); return DELETE; 		}
 "do"            /* JZ reserved word */  { UP DL(DO); return DO; 			}
-"double"        /* JZ reserved word */  { UP DL(DOUBLE); return DOUBLE; 		}
 "else"          /* JZ reserved word */  { UP DL(ELSE); return ELSE; 		}	
 "enum"          /* JZ reserved word */  { UP DL(ENUM); return ENUM; 		}
 "export"        /* JZ reserved word */  { UP DL(EXPORT); return EXPORT; 		}
@@ -124,41 +122,27 @@ UPNL; DL(single line comment);
 "false"         /* JZ reserved word */  { UP DL(FALSE); return FALSE; 		}
 "final"         /* JZ reserved word */  { UP DL(FINAL); return FINAL; 		}
 "finally"       /* JZ reserved word */  { UP DL(FINALLY); return FINALLY; 		}
-"float"         /* JZ reserved word */  { UP DL(FLOAT); return FLOAT; 		}
 "for"           /* JZ reserved word */  { UP DL(FOR); return FOR; 			}
 "function"      /* JZ reserved word */  { UP DL(FUNCTION); return FUNCTION; 	}
-"goto"          /* JZ reserved word */  { UP DL(GOTO); return GOTO; 		}
+"get" 			/* JZ reserved word */  { UP DL(GET); return GET; 	}
 "if"            /* JZ reserved word */  { UP DL(IF); return IF; 			}
 "implements"    /* JZ reserved word */  { UP DL(IMPLEMENTS); return IMPLEMENTS; 	}
 "import"        /* JZ reserved word */  { UP DL(IMPORT); return IMPORT; 		}
 "in"            /* JZ reserved word */  { UP DL(IN); return IN; 			}
 "instanceof"    /* JZ reserved word */  { UP DL(INSTANCEOF); return INSTANCEOF; 	}
-"int"           /* JZ reserved word */  { UP DL(INT); return INT; 			}
-"interface"     /* JZ reserved word */  { UP DL(INTERFACE); return INTERFACE; 	}
-"long"          /* JZ reserved word */  { UP DL(LONG); return LONG; 		}
-"native"        /* JZ reserved word */  { UP DL(NATIVE); return NATIVE; 		}
 "new"           /* JZ reserved word */  { UP DL(NEW); return NEW; 			}
 "null"          /* JZ reserved word */  { UP DL(NUL); return NUL; 			}	
-"package"       /* JZ reserved word */  { UP DL(PACKAGE); return PACKAGE; 		}
-"private"       /* JZ reserved word */  { UP DL(PRIVATE); return PRIVATE; 		}
-"protected"     /* JZ reserved word */  { UP DL(PROTECTED); return PROTECTED; 	}
-"public"        /* JZ reserved word */  { UP DL(PUBLIC); return PUBLIC; 		}
 "return"        /* JZ reserved word */  { UP DL(RETURN); return RETURN; 		}
-"short"         /* JZ reserved word */  { UP DL(SHORT); return SHORT; 		}	
-"static"        /* JZ reserved word */  { UP DL(STATIC); return STATIC; 		}
+"set" 			/* JZ reserved word */  { UP DL(SET); return SET; 		}
 "super"         /* JZ reserved word */  { UP DL(SUPER); return SUPER; 		}
 "switch"		/* JZ reserved word */  { UP DL(SWITCH); return SWITCH; 		}
-"synchronized"	/* JZ reserved word */  { UP DL(SYNCHRONIZED); return SYNCHRONIZED; }
 "this"			/* JZ reserved word */  { UP DL(THIS); return THIS; 		}
 "throw"         /* JZ reserved word */  { UP DL(THROW); return THROW; 		}
-"throws"        /* JZ reserved word */  { UP DL(THROWS); return THROWS; 		}
-"transient"     /* JZ reserved word */  { UP DL(TRANSIENT); return TRANSIENT;	}
 "true"          /* JZ reserved word */  { UP DL(TRUE); return TRUE; 		}
 "try"           /* JZ reserved word */  { UP DL(TRY); return TRY; 			}
 "typeof"        /* JZ reserved word */  { UP DL(TYPEOF); return TYPEOF; 		}
 "var"           /* JZ reserved word */  { UP DL(VAR); return VAR; 			}
 "void"          /* JZ reserved word */  { UP DL(VOID); return VOID; 		}
-"volatile"      /* JZ reserved word */  { UP DL(VOLATILE); return VOLATILE; 	}
 "while"         /* JZ reserved word */  { UP DL(WHILE); return WHILE; 		}
 "with"          /* JZ reserved word */  { UP DL(WITH); return WITH; 		}
 
@@ -259,7 +243,7 @@ void yyerror(const char* format, ...)
 	vprintf(format, args);
 	
 	if (!strcmp(format, "parse error"))
-		printf("\n");
+		std::cout << std::endl;
 	
 	std::cout << "Error position: Line " << g_yypos.getLine() << ", Column " << g_yypos.getCol() << std::endl;
 
