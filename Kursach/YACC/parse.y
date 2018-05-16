@@ -175,9 +175,14 @@ universal_single_block:
 			| operators 										{dbg("universal_single_block: operators")}
 
 /* ++@++ Label statement ++@++ */
+val_lbl:
+			literal_string
+			| GET
+			| SET
+
 label:
-			literal_string COLON 								{dbg("label: lbl1 :")}
-			| label literal_string COLON						{dbg("label: ... lbl1 :")}
+			val_lbl COLON 								{dbg("label: lbl1 :")}
+			| val_lbl literal_string COLON						{dbg("label: ... lbl1 :")}
 
 label_expression:
 			label   blck_function_expression 			{dbg("label_expression: label : blck_function_expression")}
@@ -327,6 +332,9 @@ init_block:
 			| CLASS COLON init_value
 			| GET object LBRACKET_CURLY block RBRACKET_CURLY
 			| SET object LBRACKET_CURLY block RBRACKET_CURLY
+			| GET COLON init_value
+			| SET COLON init_value
+			| VAR assign_expression
 
 			| init_block COMA literal_string COLON init_value 								{dbg("init_block: ... , a : init_value")}
 			| init_block COMA constant_string COLON init_value 								{dbg("init_block: ... , 'vara' : init_value")}
@@ -335,6 +343,9 @@ init_block:
 			| init_block COMA CLASS COLON init_value
 			| init_block COMA GET object LBRACKET_CURLY block RBRACKET_CURLY
 			| init_block COMA SET object LBRACKET_CURLY block RBRACKET_CURLY
+			| init_block COMA GET COLON init_value
+			| init_block COMA SET COLON init_value
+			| init_block COMA VAR assign_expression
 			|
 
 //strange_square_parameters:
@@ -356,6 +367,12 @@ init_value:
 
 blck_function_expression:
 			FUNCTION literal_string LBRACKET_ROUND func_parameters RBRACKET_ROUND LBRACKET_CURLY func_body RBRACKET_CURLY 	{dbg("function: function literal_string (parameters) { func_body }")}
+			| iif_expression END_OP
+			//| LBRACKET_ROUND FUNCTION func_name LBRACKET_ROUND func_parameters RBRACKET_ROUND LBRACKET_CURLY func_body RBRACKET_CURLY RBRACKET_ROUND LBRACKET_ROUND RBRACKET_ROUND END_OP
+
+/* What an idiots decide to implement that:
+(function() {})();
+*/
 
 iif_expression:
 			LBRACKET_ROUND FUNCTION func_name LBRACKET_ROUND func_parameters RBRACKET_ROUND LBRACKET_CURLY func_body RBRACKET_CURLY LBRACKET_ROUND RBRACKET_ROUND RBRACKET_ROUND
@@ -397,7 +414,7 @@ expression:
 			| new_expression 									{dbgCoExpr("expression: new_expression")}
 			| delete_expression 								{dbgCoExpr("expression: delete_expression")}
 
-			| obj_and_method 									{dbgCoExpr("expression: obj_and_method")}
+			| object 											{dbgCoExpr("expression: object")}
 
 			| literal_number 									{dbgCoExpr("expression: literal_number")}
 			//| constant_string 									{dbgCoExpr("expression: constant_string")}
@@ -415,6 +432,7 @@ expression:
 			| in_expression 									{dbgCoExpr("expression: property in object")}
 
 			| round_bracket_expression
+			| round_bracket_expression DOT object
 
 			| square_bracket_expression
 
@@ -525,10 +543,6 @@ ternary_expression:
 
 /* ++@++ Objects ++@++ */
 
-obj_and_method:
-			//object LBRACKET_ROUND parameters RBRACKET_ROUND {dbg("obj_and_method: f(expr)")}
-			object
-
 parameters:
 			expression 											{dbg("parameters: 1")}
 			| function_expression 								{dbg("parameters: function_expression")}
@@ -540,12 +554,16 @@ parameters:
 
 object:
 			object LBRACKET_ROUND parameters RBRACKET_ROUND 	{dbg("object: ... ( parameters )")}
-			| LBRACKET_ROUND parameters RBRACKET_ROUND
+			//| LBRACKET_ROUND parameters RBRACKET_ROUND
 			| object gen_list 								    {dbg("object: ... [ parameters ]")}
+			| object DOT GET
+			| object DOT SET
+			| GET
+			| SET
 			| literal_string	 								{dbg("object: a")}
 			| object DOT literal_string							{dbg("object: ... .a")}
 			| THIS DOT literal_string 							{dbg("object: this.a")}
-			| THIS LBRACKET_SQUARE object RBRACKET_SQUARE
+			| THIS LBRACKET_SQUARE parameters RBRACKET_SQUARE
 			| constant_string
 			//| round_bracket_expression
 
